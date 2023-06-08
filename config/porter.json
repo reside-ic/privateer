@@ -1,0 +1,20 @@
+{
+  "targets": [
+    {
+      "name": "orderly_volume",
+      "type": "volume"
+    }
+  ],
+  "hosts": [
+    {
+      "name": "annex",
+      "hostname": "annex.montagu.dide.ic.ac.uk",
+      "user": "montagu"
+    },
+    {
+      "name": "production",
+      "hostname": "production.montagu.dide.ic.ac.uk",
+      "port": 10022
+    }
+  ]
+}
