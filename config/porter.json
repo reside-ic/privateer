@@ -3,6 +3,10 @@
     {
       "name": "orderly_volume",
       "type": "volume"
+    },
+    {
+      "name": "another_volume",
+      "type": "volume"
     }
   ],
   "hosts": [

@@ -21,17 +21,17 @@ def main(argv=None):
         return about.__version__
     cfg = PorterConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
-    names = "".join([t.name for t in targets])
+    names = ", ".join([f"'{t.name}'" for t in targets])
     if len(targets) == 0:
         return "No targets selected. Doing nothing."
     if opts["backup"]:
         host = cfg.get_host(opts["--to"])
-        msg = f"Backed up targets '{names}' to host '{host.name}'"
+        msg = f"Backed up targets {names} to host '{host.name}'"
         backup(host, targets)
         return msg
     elif opts["restore"]:
         host = cfg.get_host(opts["--from"])
-        msg = f"Restored targets '{names}' from host '{host.name}'"
+        msg = f"Restored targets {names} from host '{host.name}'"
         return msg
 
 

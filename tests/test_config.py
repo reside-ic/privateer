@@ -5,7 +5,7 @@ from src.porter.config import PorterConfig, PorterHost, PorterTarget
 
 def test_config():
     cfg = PorterConfig("config")
-    assert len(cfg.targets) == 1
+    assert len(cfg.targets) == 2
     assert cfg.targets[0].name == "orderly_volume"
     assert len(cfg.hosts) == 3
     assert cfg.hosts[0].name == "production"

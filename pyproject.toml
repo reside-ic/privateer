@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "porter"
+name = "reside-porter"
 dynamic = ["version"]
 description = 'Tool to backup docker volumes'
 readme = "README.md"
