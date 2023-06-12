@@ -18,7 +18,8 @@ class PorterHost:
 class PorterTarget:
     def __init__(self, dat):
         if dat["type"] != "volume":
-            raise Exception("Only 'volume' targets are supported.")
+            msg = "Only 'volume' targets are supported."
+            raise Exception(msg)
         self.name = dat["name"]
         self.type = dat["type"]
 

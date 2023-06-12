@@ -7,9 +7,26 @@
 
 **Table of Contents**
 
+- [Usage](#usage)
 - [Test](#test-and-lint)
 - [Installation](#installation)
 - [License](#license)
+
+## Usage
+
+"""Usage:
+  porter --version
+  porter backup <path> --to=HOST [--exclude=TARGETS] [--include=INCLUDE]
+  porter restore <path> --from=HOST [--exclude=TARGETS] [--include=INCLUDE]
+
+Options:
+  --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
+  --include=TARGETS  Comma separated string of target names to include (default is to include all)
+"""
+
+`<path>` is the path to a directory containing a `porter.json` file. This file should contain at least one target 
+and at least one host. See `./config/porter.json` for an example. By default all targets in the config file are used, 
+but this can be overridden by explicitly including or excluding targets by name.
 
 ## Test and lint
 
