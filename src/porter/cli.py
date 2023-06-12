@@ -20,15 +20,15 @@ def main(argv=None):
         return about.__version__
     cfg = PorterConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
-    names = ''.join([t.name for t in targets])
+    names = "".join([t.name for t in targets])
     if len(targets) == 0:
         return "No targets selected. Doing nothing."
     if opts["backup"]:
-        host = cfg.get_host(opts['--to'])
+        host = cfg.get_host(opts["--to"])
         msg = f"Backing up targets '{names}' to host '{host.name}'"
         return msg
     elif opts["restore"]:
-        host = cfg.get_host(opts['--from'])
+        host = cfg.get_host(opts["--from"])
         msg = f"Restoring targets '{names}' from host '{host.name}'"
         return msg
 
