@@ -1,5 +1,4 @@
 from unittest import mock
-
 import pytest
 
 from src.porter import cli
@@ -7,28 +6,25 @@ from src.porter.config import PorterTarget
 
 
 def test_parse_args():
-    res = cli.main(["backup", "config", "--to=annex"])
-    assert res == "Backing up targets 'orderly_volume' to host 'annex'"
-
-    res = cli.main(["restore", "config", "--from=annex"])
-    assert res == "Restoring targets 'orderly_volume' from host 'annex'"
-
-    res = cli.main(["restore", "config", "--from=annex", "--exclude=orderly_volume"])
-    assert res == "No targets selected. Doing nothing."
-
     with mock.patch("src.porter.cli.get_targets") as t:
-        cli.main(["backup", "config", "--to=annex", "--include=I", "--exclude=E"])
+        cli.main(["backup", "config", "--to=uat", "--include=I", "--exclude=E"])
     assert t.call_count == 1
     assert t.call_args[0][0] == "I"
     assert t.call_args[0][1] == "E"
     assert len(t.call_args[0][2]) == 1
     assert t.call_args[0][2][0].name == "orderly_volume"
 
-    #   res = cli.main(["backup", "config", "--to=uat"])
-    #  assert res == "Backing up targets to host 'uat'"
+    res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume"])
+    assert res == "No targets selected. Doing nothing."
+
+    with mock.patch("src.porter.cli.backup") as b:
+        res = cli.main(["backup", "config", "--to=test"])
+        assert res == "Backed up targets 'orderly_volume' to host 'test'"
+
+    assert b.called
 
     res = cli.main(["restore", "config", "--from=uat"])
-    assert res == "Restored targets from host 'uat'"
+    assert res == "Restored targets 'orderly_volume' from host 'uat'"
 
     res = cli.main(["--version"])
     assert res == "0.0.1"
