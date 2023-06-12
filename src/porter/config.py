@@ -3,16 +3,23 @@ import json
 
 class PorterHost:
     def __init__(self, dat):
+        host_type = dat["type"]
+        if host_type != "remote" and host_type != "local":
+            msg = "Host type must be 'remote' or 'local'."
+            raise Exception(msg)
         self.name = dat["name"]
-        self.hostname = dat["hostname"]
-        if "user" in dat:
-            self.user = dat["user"]
-        else:
-            self.user = None
-        if "port" in dat:
-            self.port = dat["port"]
-        else:
-            self.port = None
+        self.host_type = host_type
+        self.path = dat["path"]
+        if host_type == "remote":
+            self.hostname = dat["hostname"]
+            if "user" in dat:
+                self.user = dat["user"]
+            else:
+                self.user = None
+            if "port" in dat:
+                self.port = dat["port"]
+            else:
+                self.port = None
 
 
 class PorterTarget:

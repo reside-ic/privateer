@@ -42,6 +42,12 @@ On CI, use `hatch run cov-ci` to generate an xml report.
 pip install porter
 ```
 
+## Install from local sources
+
+1. `hatch build`
+2. `pip install dist/porter-{version}.tar.gz`
+
+
 ## License
 
 `porter` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

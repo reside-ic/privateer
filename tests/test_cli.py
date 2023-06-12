@@ -24,6 +24,12 @@ def test_parse_args():
     assert len(t.call_args[0][2]) == 1
     assert t.call_args[0][2][0].name == "orderly_volume"
 
+    #   res = cli.main(["backup", "config", "--to=uat"])
+    #  assert res == "Backing up targets to host 'uat'"
+
+    res = cli.main(["restore", "config", "--from=uat"])
+    assert res == "Restored targets from host 'uat'"
+
     res = cli.main(["--version"])
     assert res == "0.0.1"
 

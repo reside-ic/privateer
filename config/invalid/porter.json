@@ -9,12 +9,14 @@
     {
       "name": "annex",
       "hostname": "annex.montagu.dide.ic.ac.uk",
-      "user": "montagu"
+      "user": "montagu",
+      "path": "starport",
+      "type": "remote"
     },
     {
       "name": "annex",
-      "hostname": "production.montagu.dide.ic.ac.uk",
-      "port": 10022
+      "path": "starport",
+      "type": "local"
     }
   ]
 }
