@@ -1,10 +1,10 @@
 import pytest
 
-from src.porter.config import PorterConfig, PorterHost, PorterTarget
+from src.privateer.config import PrivateerConfig, PrivateerHost, PrivateerTarget
 
 
 def test_config():
-    cfg = PorterConfig("config")
+    cfg = PrivateerConfig("config")
     assert len(cfg.targets) == 2
     assert cfg.targets[0].name == "orderly_volume"
     assert len(cfg.hosts) == 3
@@ -26,18 +26,18 @@ def test_config():
 
 def test_only_volume_targets_allowed():
     with pytest.raises(Exception) as err:
-        PorterTarget({"name": "test", "type": "directory"})
+        PrivateerTarget({"name": "test", "type": "directory"})
     assert str(err.value) == "Only 'volume' targets are supported."
 
 
 def test_valid_host_types():
     with pytest.raises(Exception) as err:
-        PorterHost({"name": "test", "type": "directory"})
+        PrivateerHost({"name": "test", "type": "directory"})
     assert str(err.value) == "Host type must be 'remote' or 'local'."
 
 
 def test_unique_hosts():
-    cfg = PorterConfig("config/invalid")
+    cfg = PrivateerConfig("config/invalid")
     with pytest.raises(Exception) as err:
         cfg.get_host("annex")
     assert str(err.value) == "Invalid arguments: two hosts with the name 'annex' found."

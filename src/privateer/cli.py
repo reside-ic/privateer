@@ -1,7 +1,7 @@
 """Usage:
-  porter --version
-  porter backup <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
-  porter restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer --version
+  privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS]
 
 Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
@@ -10,16 +10,16 @@ Options:
 
 import docopt
 
-import porter.__about__ as about
-from porter.backup import backup
-from porter.config import PorterConfig
+import privateer.__about__ as about
+from privateer.backup import backup
+from privateer.config import PrivateerConfig
 
 
 def main(argv=None):
     opts = docopt.docopt(__doc__, argv)
     if opts["--version"]:
         return about.__version__
-    cfg = PorterConfig(opts["<path>"])
+    cfg = PrivateerConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
     names = ", ".join([f"'{t.name}'" for t in targets])
     if len(targets) == 0:

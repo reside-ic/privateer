@@ -2,12 +2,12 @@ from unittest import mock
 
 import pytest
 
-from src.porter import cli
-from src.porter.config import PorterTarget
+from src.privateer import cli
+from src.privateer.config import PrivateerTarget
 
 
 def test_parse_args():
-    with mock.patch("src.porter.cli.get_targets") as t:
+    with mock.patch("src.privateer.cli.get_targets") as t:
         cli.main(["backup", "config", "--to=uat", "--include=I", "--exclude=E"])
     assert t.call_count == 1
     assert t.call_args[0][0] == "I"
@@ -18,7 +18,7 @@ def test_parse_args():
     res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume,another_volume"])
     assert res == "No targets selected. Doing nothing."
 
-    with mock.patch("src.porter.cli.backup") as b:
+    with mock.patch("src.privateer.cli.backup") as b:
         res = cli.main(["backup", "config", "--to=test"])
         assert res == "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
 
@@ -28,11 +28,11 @@ def test_parse_args():
     assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
 
     res = cli.main(["--version"])
-    assert res == "0.0.1"
+    assert res == "0.0.2"
 
 
 def test_get_targets():
-    all_targets = [PorterTarget({"name": "vol_1", "type": "volume"}), PorterTarget({"name": "vol_2", "type": "volume"})]
+    all_targets = [PrivateerTarget({"name": "vol_1", "type": "volume"}), PrivateerTarget({"name": "vol_2", "type": "volume"})]
     res = cli.get_targets("vol_1,vol_2", None, all_targets)
     assert len(res) == 2
     assert res == all_targets

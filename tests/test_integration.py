@@ -1,12 +1,12 @@
 import os
 import shutil
 
-from src.porter import cli
-from src.porter.config import PorterConfig
+from src.privateer import cli
+from src.privateer.config import PrivateerConfig
 
 
 def test_backup():
-    cfg = PorterConfig("config")
+    cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     made_dir = False
     if not os.path.exists(test.path):

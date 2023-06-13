@@ -7,11 +7,11 @@ import docker
 from fabric import Connection
 from invoke import UnexpectedExit
 
-from porter.config import PorterHost, PorterTarget
-from porter.docker_helpers import DockerClient
+from privateer.config import PrivateerHost, PrivateerTarget
+from privateer.docker_helpers import DockerClient
 
 
-def backup(host: PorterHost, targets: List[PorterTarget]):
+def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
     if host.host_type == "local":
         if not os.path.exists(host.path):
             msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
@@ -34,7 +34,7 @@ def backup(host: PorterHost, targets: List[PorterTarget]):
     return True
 
 
-def tar_volume(target: PorterTarget):
+def tar_volume(target: PrivateerTarget):
     tmp = tempfile.gettempdir()
     local_backup_path = os.path.join(tmp, "backup")
     if not os.path.exists(local_backup_path):
@@ -51,7 +51,7 @@ def tar_volume(target: PorterTarget):
     return f"{local_backup_path}/{target.name}.tar"
 
 
-def untar_volume(target: PorterTarget, backup_path):
+def untar_volume(target: PrivateerTarget, backup_path):
     volume_mount = docker.types.Mount("/data", target.name)
     backup_mount = docker.types.Mount("/backup", backup_path, type="bind")
     with DockerClient() as cl:

@@ -1,7 +1,7 @@
-# porter
+# privateer
 
-[![PyPI - Version](https://img.shields.io/pypi/v/porter.svg)](https://pypi.org/project/porter)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/porter.svg)](https://pypi.org/project/porter)
+[![PyPI - Version](https://img.shields.io/pypi/v/privateer.svg)](https://pypi.org/project/privateer)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/privateer.svg)](https://pypi.org/project/privateer)
 
 -----
 
@@ -14,18 +14,18 @@
 
 ## Usage
 
-"""Usage:
-  porter --version
-  porter backup <path> --to=HOST [--exclude=TARGETS] [--include=INCLUDE]
-  porter restore <path> --from=HOST [--exclude=TARGETS] [--include=INCLUDE]
+```Usage:
+  privateer --version
+  privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=INCLUDE]
+  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=INCLUDE]
 
 Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
   --include=TARGETS  Comma separated string of target names to include (default is to include all)
-"""
+```
 
-`<path>` is the path to a directory containing a `porter.json` file. This file should contain at least one target 
-and at least one host. See `./config/porter.json` for an example. By default all targets in the config file are used, 
+`<path>` is the path to a directory containing a `privateer.json` file. This file should contain at least one target 
+and at least one host. See `./config/privateer.json` for an example. By default all targets in the config file are used, 
 but this can be overridden by explicitly including or excluding targets by name.
 
 ## Test and lint
@@ -38,17 +38,14 @@ On CI, use `hatch run cov-ci` to generate an xml report.
 
 ## Installation
 
-Note the package name is `reside-porter` (because `porter` was already taken on PyPi). But the name of the program 
-is just `porter`.
-
 ```console
-pip install reside-porter
+pip install privateer
 ```
 
 ## Install from local sources
 
 1. `hatch build`
-2. `pip install dist/reside_porter-{version}.tar.gz`
+2. `pip install dist/privateer-{version}.tar.gz`
 
 ## Publish
 
@@ -74,10 +71,10 @@ docker run --rm -it --entrypoint bash python
 Then:
 
 ```
-pip install --index-url https://test.pypi.org/simple reside-porter --extra-index-url https://pypi.org/simple
+pip install --index-url https://test.pypi.org/simple privateer --extra-index-url https://pypi.org/simple
 ```
 
-Now you should be able to run `porter` from the command line and see the usage instructions.
+Now you should be able to run `privateer` from the command line and see the usage instructions.
 
 If it is working, you can publish to the real PyPi:
 
@@ -87,4 +84,4 @@ hatch publish
 
 ## License
 
-`reside-porter` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+`privateer` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

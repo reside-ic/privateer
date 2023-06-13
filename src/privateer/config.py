@@ -1,7 +1,7 @@
 import json
 
 
-class PorterHost:
+class PrivateerHost:
     def __init__(self, dat):
         host_type = dat["type"]
         if host_type != "remote" and host_type != "local":
@@ -22,7 +22,7 @@ class PorterHost:
                 self.port = None
 
 
-class PorterTarget:
+class PrivateerTarget:
     def __init__(self, dat):
         if dat["type"] != "volume":
             msg = "Only 'volume' targets are supported."
@@ -31,12 +31,12 @@ class PorterTarget:
         self.type = dat["type"]
 
 
-class PorterConfig:
+class PrivateerConfig:
     def __init__(self, path):
-        with open(f"{path}/porter.json") as f:
+        with open(f"{path}/privateer.json") as f:
             config = json.load(f)
-        self.targets = [PorterTarget(t) for t in config["targets"]]
-        self.hosts = [PorterHost(h) for h in config["hosts"]]
+        self.targets = [PrivateerTarget(t) for t in config["targets"]]
+        self.hosts = [PrivateerHost(h) for h in config["hosts"]]
 
     def get_host(self, name):
         match = [h for h in self.hosts if h.name == name]

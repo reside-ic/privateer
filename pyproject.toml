@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "reside-porter"
+name = "privateer"
 dynamic = ["version"]
 description = 'Tool to backup docker volumes'
 readme = "README.md"
@@ -31,15 +31,15 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/reside-ic/porter#readme"
-Issues = "https://github.com/reside-ic/porter/issues"
-Source = "https://github.com/reside-ic/porter"
+Documentation = "https://github.com/reside-ic/privateer#readme"
+Issues = "https://github.com/reside-ic/privateer/issues"
+Source = "https://github.com/reside-ic/privateer"
 
 [project.scripts]
-porter = "porter.cli:main"
+privateer = "privateer.cli:main"
 
 [tool.hatch.version]
-path = "src/porter/__about__.py"
+path = "src/privateer/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -77,7 +77,7 @@ dependencies = [
     "ruff>=0.0.243",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/porter tests}"
+typing = "mypy --install-types --non-interactive {args:src/privateer tests}"
 style = [
     "ruff {args:.}",
     "black --check --diff {args:.}",
@@ -145,7 +145,7 @@ unfixable = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["porter"]
+known-first-party = ["privateer"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -159,12 +159,12 @@ source = ["src"]
 branch = true
 parallel = true
 omit = [
-    "src/porter/__about__.py",
+    "src/privateer/__about__.py",
 ]
 
 [tool.coverage.paths]
-porter = ["src/porter", "*/porter/src/porter"]
-tests = ["tests", "*/porter/tests"]
+privateer = ["src/privateer", "*/privateer/src/privateer"]
+tests = ["tests", "*/privateer/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
