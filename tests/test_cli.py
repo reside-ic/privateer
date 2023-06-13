@@ -7,6 +7,13 @@ from src.privateer.config import PrivateerTarget
 
 
 def test_parse_args():
+    res = cli.main(["restore", "config", "--from=uat"])
+    msg = "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
+    assert res == msg
+
+    res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume, another_volume"])
+    assert res == "No targets selected. Doing nothing."
+
     with mock.patch("src.privateer.cli.get_targets") as t:
         cli.main(["backup", "config", "--to=uat", "--include=I", "--exclude=E"])
     assert t.call_count == 1
@@ -18,21 +25,22 @@ def test_parse_args():
     res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume,another_volume"])
     assert res == "No targets selected. Doing nothing."
 
+    msg = "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
     with mock.patch("src.privateer.cli.backup") as b:
         res = cli.main(["backup", "config", "--to=test"])
-        assert res == "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
+        assert res == msg
 
     assert b.called
-
-    res = cli.main(["restore", "config", "--from=uat"])
-    assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
 
     res = cli.main(["--version"])
     assert res == "0.0.2"
 
 
 def test_get_targets():
-    all_targets = [PrivateerTarget({"name": "vol_1", "type": "volume"}), PrivateerTarget({"name": "vol_2", "type": "volume"})]
+    all_targets = [
+        PrivateerTarget({"name": "vol_1", "type": "volume"}),
+        PrivateerTarget({"name": "vol_2", "type": "volume"}),
+    ]
     res = cli.get_targets("vol_1,vol_2", None, all_targets)
     assert len(res) == 2
     assert res == all_targets
@@ -54,4 +62,5 @@ def test_get_targets():
 
     with pytest.raises(Exception) as err:
         cli.get_targets("vol_1", "vol_2", all_targets)
-    assert str(err.value) == "At most one of --include or --exclude should be provided."
+    e = "At most one of --include or --exclude should be provided."
+    assert str(err.value) == e

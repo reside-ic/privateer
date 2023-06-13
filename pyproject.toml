@@ -159,7 +159,7 @@ source = ["src"]
 branch = true
 parallel = true
 omit = [
-    "src/privateer/__about__.py",
+    "src/privateer/__about__.py"
 ]
 
 [tool.coverage.paths]
