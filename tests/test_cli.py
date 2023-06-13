@@ -29,7 +29,10 @@ def test_parse_args():
 
 
 def test_get_targets():
-    all_targets = [PrivateerTarget({"name": "vol_1", "type": "volume"}), PrivateerTarget({"name": "vol_2", "type": "volume"})]
+    all_targets = [
+        PrivateerTarget({"name": "vol_1", "type": "volume"}),
+        PrivateerTarget({"name": "vol_2", "type": "volume"}),
+    ]
     res = cli.get_targets("vol_1,vol_2", None, all_targets)
     assert len(res) == 2
     assert res == all_targets
