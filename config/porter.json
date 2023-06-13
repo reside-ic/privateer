@@ -1,0 +1,33 @@
+{
+  "targets": [
+    {
+      "name": "orderly_volume",
+      "type": "volume"
+    },
+    {
+      "name": "another_volume",
+      "type": "volume"
+    }
+  ],
+  "hosts": [
+    {
+      "name": "production",
+      "hostname": "production.montagu.dide.ic.ac.uk",
+      "port": 10022,
+      "path": "starport",
+      "type": "remote"
+    },
+    {
+      "name": "uat",
+      "hostname": "uat.montagu.dide.ic.ac.uk",
+      "user": "vagrant",
+      "path": "starport",
+      "type": "remote"
+    },
+    {
+      "name": "test",
+      "path": "starport",
+      "type": "local"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "targets": [
+    {
+      "name": "orderly_volume",
+      "type": "volume"
+    }
+  ],
+  "hosts": [
+    {
+      "name": "annex",
+      "hostname": "annex.montagu.dide.ic.ac.uk",
+      "user": "montagu",
+      "path": "starport",
+      "type": "remote"
+    },
+    {
+      "name": "annex",
+      "path": "starport",
+      "type": "local"
+    }
+  ]
+}
