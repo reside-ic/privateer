@@ -47,8 +47,6 @@ pip install privateer
 1. `hatch build`
 2. `pip install dist/privateer-{version}.tar.gz`
 
-## Publish
-
 ## Publish to PyPi
 
 Ensure you have built a new version of the package:
