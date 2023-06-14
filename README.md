@@ -42,6 +42,44 @@ On CI, use `hatch run cov-ci` to generate an xml report.
 pip install privateer
 ```
 
+## Install from local sources
+
+1. `hatch build`
+2. `pip install dist/privateer-{version}.tar.gz`
+
+## Publish to PyPi
+
+Ensure you have built a new version of the package:
+1. `hatch clean`
+2. `hatch build`
+
+Then publish to the test server:
+
+```console
+hatch publish -r test
+```
+
+You will be prompted to enter your [test.pypi.org](https://test.pypi.org/legacy/) username and password.
+To test the installation, first run Python in a container:
+
+```
+docker run --rm -it --entrypoint bash python
+```
+
+Then:
+
+```
+pip install --index-url https://test.pypi.org/simple privateer --extra-index-url https://pypi.org/simple
+```
+
+Now you should be able to run `privateer` from the command line and see the usage instructions.
+
+If it is working, you can publish to the real PyPi:
+
+```console
+hatch publish
+```
+
 ## License
 
 `privateer` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

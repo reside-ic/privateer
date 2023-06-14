@@ -7,11 +7,9 @@ from src.privateer.config import PrivateerTarget
 
 
 def test_parse_args():
-    res = cli.main(["backup", "config", "--to=uat"])
-    assert res == "Backing up targets 'orderly_volume', 'another_volume' to host 'uat'"
-
     res = cli.main(["restore", "config", "--from=uat"])
-    assert res == "Restoring targets 'orderly_volume', 'another_volume' from host 'uat'"
+    msg = "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
+    assert res == msg
 
     res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume, another_volume"])
     assert res == "No targets selected. Doing nothing."
@@ -24,8 +22,18 @@ def test_parse_args():
     assert len(t.call_args[0][2]) == 2
     assert t.call_args[0][2][0].name == "orderly_volume"
 
+    res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume,another_volume"])
+    assert res == "No targets selected. Doing nothing."
+
+    msg = "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
+    with mock.patch("src.privateer.cli.backup") as b:
+        res = cli.main(["backup", "config", "--to=test"])
+        assert res == msg
+
+    assert b.called
+
     res = cli.main(["--version"])
-    assert res == "0.0.1"
+    assert res == "0.0.2"
 
 
 def test_get_targets():
@@ -54,4 +62,5 @@ def test_get_targets():
 
     with pytest.raises(Exception) as err:
         cli.get_targets("vol_1", "vol_2", all_targets)
-    assert str(err.value) == "At most one of --include or --exclude should be provided."
+    e = "At most one of --include or --exclude should be provided."
+    assert str(err.value) == e

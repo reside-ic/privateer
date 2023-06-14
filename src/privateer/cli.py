@@ -11,6 +11,7 @@ Options:
 import docopt
 
 import privateer.__about__ as about
+from privateer.backup import backup
 from privateer.config import PrivateerConfig
 
 
@@ -25,11 +26,12 @@ def main(argv=None):
         return "No targets selected. Doing nothing."
     if opts["backup"]:
         host = cfg.get_host(opts["--to"])
-        msg = f"Backing up targets {names} to host '{host.name}'"
+        msg = f"Backed up targets {names} to host '{host.name}'"
+        backup(host, targets)
         return msg
     elif opts["restore"]:
         host = cfg.get_host(opts["--from"])
-        msg = f"Restoring targets {names} from host '{host.name}'"
+        msg = f"Restored targets {names} from host '{host.name}'"
         return msg
 
 
