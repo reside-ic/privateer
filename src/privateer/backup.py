@@ -21,8 +21,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
             res = shutil.copy(path, host.path)
             print(f"Copied {path} to {res}")
     else:
-        with Connection(host=host.hostname, user=host.user,
-                        port=host.port) as c:
+        with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             try:
                 c.run(f"test -d {host.path}", in_stream=False)
             except UnexpectedExit:
@@ -46,18 +45,15 @@ def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
                 untar_volume(t, host.path)
                 print(f"Restored {path} to {t.name}")
     else:
-        with Connection(host=host.hostname, user=host.user,
-                        port=host.port) as c:
+        with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             with tempfile.TemporaryDirectory() as local_backup_path:
                 for t in targets:
                     remote_path = os.path.join(host.path, f"{t.name}.tar")
                     try:
-                        print(f"Restoring {remote_path} to {t.name}")
                         c.run(f"test -f {remote_path}", in_stream=False)
                         if not os.path.exists(local_backup_path):
                             os.mkdir(local_backup_path)
-                        res = c.get(remote_path, f"{local_backup_path}/")
-                        print(f"Downloaded {res.local} from {res.remote}")
+                        c.get(remote_path, f"{local_backup_path}/")
                         untar_volume(t, local_backup_path)
                         print(f"Restored {remote_path} to {t.name}")
                     except UnexpectedExit:
@@ -78,8 +74,7 @@ def tar_volume(target: PrivateerTarget):
             "ubuntu",
             remove=True,
             mounts=[volume_mount, backup_mount],
-            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data",
-                     "."],
+            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data", "."],
         )
     return f"{local_backup_path}/{target.name}.tar"
 

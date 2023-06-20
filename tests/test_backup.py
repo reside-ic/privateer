@@ -6,7 +6,7 @@ from os import listdir
 import docker
 import pytest
 
-from src.privateer.backup import backup, tar_volume, untar_volume, restore
+from src.privateer.backup import backup, restore, tar_volume, untar_volume
 from src.privateer.config import PrivateerConfig, PrivateerTarget
 from src.privateer.docker_helpers import DockerClient
 
@@ -15,10 +15,8 @@ def test_tar_volume():
     test_vol = docker.types.Mount("/data", "privateer_test")
     try:
         with DockerClient() as cl:
-            cl.containers.run("ubuntu", mounts=[test_vol], remove=True,
-                              command=["touch", "/data/test.txt"])
-            target = PrivateerTarget(
-                {"name": "privateer_test", "type": "volume"})
+            cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
+            target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
             res = tar_volume(target)
             assert res.endswith("privateer_test.tar")
             res = tarfile.open(res)
@@ -37,10 +35,8 @@ def test_untar_volume():
     test_vol = docker.types.Mount("/data", "privateer_test")
     try:
         with DockerClient() as cl:
-            cl.containers.run("ubuntu", mounts=[test_vol], remove=True,
-                              command=["touch", "/data/test.txt"])
-            target = PrivateerTarget(
-                {"name": "privateer_test", "type": "volume"})
+            cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
+            target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
             res = tar_volume(target)
             # remove the volume to test restore path
             v = cl.volumes.get("privateer_test")
@@ -50,8 +46,7 @@ def test_untar_volume():
             assert res is True
             # check test.txt has been restored to volume
             container = cl.containers.run(
-                "ubuntu", mounts=[test_vol], detach=True,
-                command=["test", "-f", "/data/test.txt"]
+                "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
             )
             result = container.wait()
             container.remove()
@@ -85,8 +80,7 @@ def test_restore_local():
     test_vol = docker.types.Mount("/data", "privateer_test")
     target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
     with DockerClient() as cl:
-        cl.containers.run("ubuntu", mounts=[test_vol], remove=True,
-                          command=["touch", "/data/test.txt"])
+        cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
         backup(host, [target])
         # remove the volume to test restore path
         v = cl.volumes.get("privateer_test")
@@ -96,8 +90,7 @@ def test_restore_local():
         assert res is True
         # check test.txt has been restored to volume
         container = cl.containers.run(
-            "ubuntu", mounts=[test_vol], detach=True,
-            command=["test", "-f", "/data/test.txt"]
+            "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
         )
         result = container.wait()
         container.remove()
@@ -110,8 +103,7 @@ def test_restore_remote():
     test_vol = docker.types.Mount("/data", "privateer_test")
     target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
     with DockerClient() as cl:
-        cl.containers.run("ubuntu", mounts=[test_vol], remove=True,
-                          command=["touch", "/data/test.txt"])
+        cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
         backup(host, [target])
         # remove the volume to test restore path
         v = cl.volumes.get("privateer_test")
@@ -121,13 +113,11 @@ def test_restore_remote():
         assert res is True
         # check test.txt has been restored to volume
         container = cl.containers.run(
-            "ubuntu", mounts=[test_vol], detach=True,
-            command=["test", "-f", "/data/test.txt"]
+            "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
         )
         result = container.wait()
         container.remove()
         assert result["StatusCode"] == 0
-
 
 
 def test_remote_host_dir_validation():
@@ -138,8 +128,7 @@ def test_remote_host_dir_validation():
     uat.path = "badpath"
     with pytest.raises(Exception) as err:
         backup(uat, cfg.targets)
-    assert str(
-        err.value) == "Host path 'badpath' does not exist. Either make directory or fix config."
+    assert str(err.value) == "Host path 'badpath' does not exist. Either make directory or fix config."
 
 
 def test_local_host_dir_validation():
@@ -148,5 +137,4 @@ def test_local_host_dir_validation():
     test.path = "badpath"
     with pytest.raises(Exception) as err:
         backup(test, cfg.targets)
-    assert str(
-        err.value) == "Host path 'badpath' does not exist. Either make directory or fix config."
+    assert str(err.value) == "Host path 'badpath' does not exist. Either make directory or fix config."
