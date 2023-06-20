@@ -68,8 +68,6 @@ def test_backup_local():
 
 
 def test_restore_local():
-    if os.getenv("GITHUB_ACTIONS"):
-        pytest.skip("No access to network")
     cfg = PrivateerConfig("config")
     host = cfg.get_host("test")
     host.path = tempfile.mkdtemp()
@@ -96,6 +94,8 @@ def test_restore_local():
 
 
 def test_restore_remote():
+    if os.getenv("GITHUB_ACTIONS"):
+        pytest.skip("No access to network")
     cfg = PrivateerConfig("config")
     host = cfg.get_host("uat")
     test_vol = docker.types.Mount("/data", "privateer_test")
