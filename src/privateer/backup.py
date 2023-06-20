@@ -21,7 +21,8 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
             res = shutil.copy(path, host.path)
             print(f"Copied {path} to {res}")
     else:
-        with Connection(host=host.hostname, user=host.user, port=host.port) as c:
+        with Connection(host=host.hostname, user=host.user,
+                        port=host.port) as c:
             try:
                 c.run(f"test -d {host.path}", in_stream=False)
             except UnexpectedExit:
@@ -31,6 +32,37 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
                 path = tar_volume(t)
                 res = c.put(path, host.path)
                 print(f"Uploaded {res.local} to {res.remote}")
+    return True
+
+
+def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
+    if host.host_type == "local":
+        for t in targets:
+            path = os.path.join(host.path, f"{t.name}.tar")
+            if not os.path.exists(path):
+                msg = f"Backup path '{path}' does not exist. Not restoring {t.name}"
+                print(msg)
+            else:
+                untar_volume(t, host.path)
+                print(f"Restored {path} to {t.name}")
+    else:
+        with Connection(host=host.hostname, user=host.user,
+                        port=host.port) as c:
+            with tempfile.TemporaryDirectory() as local_backup_path:
+                for t in targets:
+                    remote_path = os.path.join(host.path, f"{t.name}.tar")
+                    try:
+                        print(f"Restoring {remote_path} to {t.name}")
+                        c.run(f"test -f {remote_path}", in_stream=False)
+                        if not os.path.exists(local_backup_path):
+                            os.mkdir(local_backup_path)
+                        res = c.get(remote_path, f"{local_backup_path}/")
+                        print(f"Downloaded {res.local} from {res.remote}")
+                        untar_volume(t, local_backup_path)
+                        print(f"Restored {remote_path} to {t.name}")
+                    except UnexpectedExit:
+                        msg = f"Backup path '{remote_path}' does not exist. Not restoring {t.name}"
+                        print(msg)
     return True
 
 
@@ -46,7 +78,8 @@ def tar_volume(target: PrivateerTarget):
             "ubuntu",
             remove=True,
             mounts=[volume_mount, backup_mount],
-            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data", "."],
+            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data",
+                     "."],
         )
     return f"{local_backup_path}/{target.name}.tar"
 
