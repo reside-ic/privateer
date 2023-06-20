@@ -41,3 +41,10 @@ def test_unique_hosts():
     with pytest.raises(Exception) as err:
         cfg.get_host("annex")
     assert str(err.value) == "Invalid arguments: two hosts with the name 'annex' found."
+
+
+def test_existent_hosts():
+    cfg = PrivateerConfig("config/invalid")
+    with pytest.raises(Exception) as err:
+        cfg.get_host("badname")
+    assert str(err.value) == "Invalid arguments: no host with the name 'badname' found."

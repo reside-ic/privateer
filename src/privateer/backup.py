@@ -24,9 +24,9 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
         with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             try:
                 c.run(f"test -d {host.path}", in_stream=False)
-            except UnexpectedExit:
+            except UnexpectedExit as err:
                 msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
-                raise Exception(msg) from None
+                raise Exception(msg) from err
             for t in targets:
                 path = tar_volume(t)
                 res = c.put(path, host.path)
@@ -35,6 +35,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
 
 
 def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
+    success = []
     if host.host_type == "local":
         for t in targets:
             path = os.path.join(host.path, f"{t.name}.tar")
@@ -43,6 +44,7 @@ def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
                 print(msg)
             else:
                 untar_volume(t, host.path)
+                success.append(t.name)
                 print(f"Restored {path} to {t.name}")
     else:
         with Connection(host=host.hostname, user=host.user, port=host.port) as c:
@@ -55,11 +57,12 @@ def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
                             os.mkdir(local_backup_path)
                         c.get(remote_path, f"{local_backup_path}/")
                         untar_volume(t, local_backup_path)
+                        success.append(t.name)
                         print(f"Restored {remote_path} to {t.name}")
                     except UnexpectedExit:
                         msg = f"Backup path '{remote_path}' does not exist. Not restoring {t.name}"
                         print(msg)
-    return True
+    return success
 
 
 def tar_volume(target: PrivateerTarget):

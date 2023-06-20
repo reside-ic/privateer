@@ -43,4 +43,7 @@ class PrivateerConfig:
         if len(match) > 1:
             msg = f"Invalid arguments: two hosts with the name '{name}' found."
             raise Exception(msg)
+        if len(match) == 0:
+            msg = f"Invalid arguments: no host with the name '{name}' found."
+            raise Exception(msg)
         return match[0]

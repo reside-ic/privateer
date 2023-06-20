@@ -20,3 +20,8 @@ def test_backup():
     finally:
         if made_dir:
             shutil.rmtree(test.path)
+
+
+def test_restore():
+    res = cli.main(["restore", "config", "--from=test"])
+    assert res == "No valid backups found. Doing nothing."

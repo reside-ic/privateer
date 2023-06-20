@@ -81,7 +81,7 @@ def test_restore_local():
         v.remove()
         # restore
         res = restore(host, [target])
-        assert res is True
+        assert res == ["privateer_test"]
         # check test.txt has been restored to volume
         container = cl.containers.run(
             "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
@@ -108,7 +108,7 @@ def test_restore_remote():
         v.remove()
         # restore
         res = restore(host, [target])
-        assert res is True
+        assert res == ["privateer_test"]
         # check test.txt has been restored to volume
         container = cl.containers.run(
             "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
