@@ -13,45 +13,41 @@ from src.privateer.docker_helpers import DockerClient
 
 def test_tar_volume():
     test_vol = docker.types.Mount("/data", "privateer_test")
-    try:
-        with DockerClient() as cl:
-            cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
-            target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
-            res = tar_volume(target)
-            assert res.endswith("privateer_test.tar")
-            res = tarfile.open(res)
-            tmp = tempfile.mkdtemp()
-            res.extractall(tmp)
-            files = listdir(tmp)
-            assert len(files) == 1
-            assert len(files) == 1
-            assert files[0] == "test.txt"
-    finally:
+    with DockerClient() as cl:
+        cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
+        target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
+        res = tar_volume(target)
+        assert res.endswith("privateer_test.tar")
+        res = tarfile.open(res)
+        tmp = tempfile.mkdtemp()
+        res.extractall(tmp)
+        files = listdir(tmp)
+        assert len(files) == 1
+        assert len(files) == 1
+        assert files[0] == "test.txt"
         v = cl.volumes.get("privateer_test")
         v.remove()
 
 
 def test_untar_volume():
     test_vol = docker.types.Mount("/data", "privateer_test")
-    try:
-        with DockerClient() as cl:
-            cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
-            target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
-            res = tar_volume(target)
-            # remove the volume to test restore path
-            v = cl.volumes.get("privateer_test")
-            v.remove()
-            # restore
-            res = untar_volume(target, os.path.dirname(res))
-            assert res is True
-            # check test.txt has been restored to volume
-            container = cl.containers.run(
-                "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
-            )
-            result = container.wait()
-            container.remove()
-            assert result["StatusCode"] == 0
-    finally:
+    with DockerClient() as cl:
+        cl.containers.run("ubuntu", mounts=[test_vol], remove=True, command=["touch", "/data/test.txt"])
+        target = PrivateerTarget({"name": "privateer_test", "type": "volume"})
+        res = tar_volume(target)
+        # remove the volume to test restore path
+        v = cl.volumes.get("privateer_test")
+        v.remove()
+        # restore
+        res = untar_volume(target, os.path.dirname(res))
+        assert res is True
+        # check test.txt has been restored to volume
+        container = cl.containers.run(
+            "ubuntu", mounts=[test_vol], detach=True, command=["test", "-f", "/data/test.txt"]
+        )
+        result = container.wait()
+        container.remove()
+        assert result["StatusCode"] == 0
         v = cl.volumes.get("privateer_test")
         v.remove()
 
@@ -95,6 +91,8 @@ def test_restore_local():
         result = container.wait()
         container.remove()
         assert result["StatusCode"] == 0
+        v = cl.volumes.get("privateer_test")
+        v.remove()
 
 
 def test_restore_remote():
@@ -118,6 +116,8 @@ def test_restore_remote():
         result = container.wait()
         container.remove()
         assert result["StatusCode"] == 0
+        v = cl.volumes.get("privateer_test")
+        v.remove()
 
 
 def test_remote_host_dir_validation():
