@@ -1,4 +1,5 @@
 import json
+import os.path
 
 
 class PrivateerHost:
@@ -10,6 +11,9 @@ class PrivateerHost:
         self.name = dat["name"]
         self.host_type = host_type
         self.path = dat["path"]
+        if host_type == "local" and not os.path.isabs(self.path):
+            self.path = os.path.abspath(self.path)
+            print(f"Relative path provided; resolving to {self.path}")
         if host_type == "remote":
             self.hostname = dat["hostname"]
             if "user" in dat:

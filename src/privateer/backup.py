@@ -53,8 +53,6 @@ def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
                     remote_path = os.path.join(host.path, f"{t.name}.tar")
                     try:
                         c.run(f"test -f {remote_path}", in_stream=False)
-                        if not os.path.exists(local_backup_path):
-                            os.mkdir(local_backup_path)
                         c.get(remote_path, f"{local_backup_path}/")
                         untar_volume(t, local_backup_path)
                         success.append(t.name)

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from src.privateer.config import PrivateerConfig, PrivateerHost, PrivateerTarget
@@ -20,7 +22,8 @@ def test_config():
     assert cfg.hosts[1].host_type == "remote"
     assert cfg.hosts[1].path == "starport"
     assert cfg.hosts[2].name == "test"
-    assert cfg.hosts[2].path == "starport"
+    assert cfg.hosts[2].path.endswith("starport")
+    assert os.path.isabs(cfg.hosts[2].path)
     assert cfg.hosts[2].host_type == "local"
 
 
