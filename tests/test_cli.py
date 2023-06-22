@@ -7,20 +7,24 @@ from src.privateer.config import PrivateerTarget
 
 
 def test_parse_args():
-    res = cli.main(["restore", "config", "--from=uat"])
-    msg = "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
-    assert res == msg
+    with mock.patch("src.privateer.cli.restore") as r:
+        r.return_value = ["orderly_volume", "another_volume"]
+        res = cli.main(["restore", "config", "--from=uat"])
+        assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'uat'"
 
-    res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume, another_volume"])
-    assert res == "No targets selected. Doing nothing."
+    with mock.patch("src.privateer.cli.restore") as r:
+        r.return_value = ["orderly_volume"]
+        res = cli.main(["restore", "config", "--from=uat"])
+        assert res == "Restored target 'orderly_volume' from host 'uat'"
 
     with mock.patch("src.privateer.cli.get_targets") as t:
-        cli.main(["backup", "config", "--to=uat", "--include=I", "--exclude=E"])
+        res = cli.main(["backup", "config", "--to=uat", "--include=I", "--exclude=E"])
     assert t.call_count == 1
     assert t.call_args[0][0] == "I"
     assert t.call_args[0][1] == "E"
     assert len(t.call_args[0][2]) == 2
     assert t.call_args[0][2][0].name == "orderly_volume"
+    assert res == "No targets selected. Doing nothing."
 
     res = cli.main(["restore", "config", "--from=uat", "--exclude=orderly_volume,another_volume"])
     assert res == "No targets selected. Doing nothing."
@@ -29,8 +33,13 @@ def test_parse_args():
     with mock.patch("src.privateer.cli.backup") as b:
         res = cli.main(["backup", "config", "--to=test"])
         assert res == msg
+        assert b.called
 
-    assert b.called
+    msg = "Backed up target 'orderly_volume' to host 'test'"
+    with mock.patch("src.privateer.cli.backup") as b:
+        res = cli.main(["backup", "config", "--to=test", "--include=orderly_volume"])
+        assert res == msg
+        assert b.called
 
     res = cli.main(["--version"])
     assert res == "0.0.2"

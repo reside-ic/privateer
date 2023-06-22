@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from src.privateer.config import PrivateerConfig, PrivateerHost, PrivateerTarget
@@ -20,7 +22,8 @@ def test_config():
     assert cfg.hosts[1].host_type == "remote"
     assert cfg.hosts[1].path == "starport"
     assert cfg.hosts[2].name == "test"
-    assert cfg.hosts[2].path == "starport"
+    assert cfg.hosts[2].path.endswith("starport")
+    assert os.path.isabs(cfg.hosts[2].path)
     assert cfg.hosts[2].host_type == "local"
 
 
@@ -41,3 +44,10 @@ def test_unique_hosts():
     with pytest.raises(Exception) as err:
         cfg.get_host("annex")
     assert str(err.value) == "Invalid arguments: two hosts with the name 'annex' found."
+
+
+def test_existent_hosts():
+    cfg = PrivateerConfig("config/invalid")
+    with pytest.raises(Exception) as err:
+        cfg.get_host("badname")
+    assert str(err.value) == "Invalid arguments: no host with the name 'badname' found."
