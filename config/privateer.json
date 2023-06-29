@@ -20,10 +20,10 @@
     {
       "name": "another_volume",
       "type": "volume",
-      "schedule": [
+      "schedules": [
         {
           "name": "custom",
-          "cron": "0 23 */2 * *",
+          "cron": "* * * * *",
           "retention_days": 12
         }
       ]

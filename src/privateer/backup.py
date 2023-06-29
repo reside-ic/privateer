@@ -12,31 +12,30 @@ from privateer.docker_helpers import DockerClient
 
 
 def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
-    if host.host_type == "local":
-        if not os.path.exists(host.path):
-            msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
-            raise Exception(msg)
-        for t in targets:
-            path = tar_volume(t)
-            res = shutil.copy(path, host.path)
-            print(f"Copied {path} to {res}")
+    check_host_path(host)
+    mounts = []
+    if host.host_type == "remote":
+        env = {
+            "SSH_HOST_NAME": host.hostname,
+            "SSH_REMOTE_PATH": host.path,
+            "SSH_USER": host.user
+        }
+        mounts.append(docker.types.Mount("/root/.ssh", os.path.expanduser("~/.ssh"), type="bind"))
     else:
-        check_host_path(host)
-        mounts = [docker.types.Mount("/root/.ssh", "/home/aehill/.ssh",
-                                     type="bind")]
-        for t in targets:
-            mounts.append(docker.types.Mount(f"/backup/{t.name}", t.name))
-        with DockerClient() as cl:
-            cl.containers.run(
-                "offen/docker-volume-backup:v2",
-                #  remove=True,
-                mounts=mounts,
-                entrypoint=["backup"],
-                environment={"SSH_HOST_NAME": host.hostname,
-                             "SSH_REMOTE_PATH": host.path,
-                             "SSH_USER": host.user
-                             }
-            )
+        mounts.append(docker.types.Mount("/archive", host.path, type="bind"))
+        env = {}
+
+    for t in targets:
+        mounts.append(docker.types.Mount(f"/backup/{t.name}", t.name))
+    with DockerClient() as cl:
+        cl.containers.run(
+            "offen/docker-volume-backup:v2",
+            mounts=mounts,
+            environment=env,
+            detach=True,
+            remove=True,
+            entrypoint=["backup"]
+        )
     return True
 
 
@@ -71,13 +70,18 @@ def restore(host: PrivateerHost, targets: List[PrivateerTarget]):
 
 
 def check_host_path(host: PrivateerHost):
-    with Connection(host=host.hostname, user=host.user,
-                    port=host.port) as c:
-        try:
-            c.run(f"test -d {host.path}", in_stream=False)
-        except UnexpectedExit as err:
+    if host.host_type == "local":
+        if not os.path.exists(host.path):
             msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
-            raise Exception(msg) from err
+            raise Exception(msg)
+    else:
+        with Connection(host=host.hostname, user=host.user,
+                        port=host.port) as c:
+            try:
+                c.run(f"test -d {host.path}", in_stream=False)
+            except UnexpectedExit as err:
+                msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
+                raise Exception(msg) from err
 
 
 def tar_volume(target: PrivateerTarget):

@@ -33,25 +33,24 @@ class PrivateerTarget:
             raise Exception(msg)
         self.name = dat["name"]
         self.type = dat["type"]
-        self.schedules = [BackupSchedule(s) for s in dat["schedules"]]
-        if len(set([s.name for s in self.schedules])) < len(self.schedules):
-            raise Exception(f"Schedules must have unique names. Found duplicate schedule names for target {self.name}")
-
+        if "schedule" in dat:
+            self.schedules = [BackupSchedule(s) for s in dat["schedules"]]
+            if len(set([s.name for s in self.schedules])) < len(self.schedules):
+                raise Exception(f"Schedules must have unique names. Found duplicate schedule names for target {self.name}")
+        else:
+            self.schedules = []
 
 class BackupSchedule:
     def __init__(self, dat):
-        if dat["cron"] == "daily":
+        self.name = dat["name"]
+        if dat["name"] == "daily":
             self.schedule = "0 2 * * *"
-            self.name = "daily"
-        elif dat["cron"] == "weekly":
+        elif dat["name"] == "weekly":
             self.schedule = "0 3 * * 1"
-            self.name = "weekly"
-        elif dat["cron"] == "monthly":
+        elif dat["name"] == "monthly":
             self.schedule = "0 4 1 * *"
-            self.name = "monthly"
         else:
             self.schedule = dat["cron"]
-            self.name = "custom"
         if "retention_days" in dat:
             self.retention_days = dat["retention_days"]
         else:
