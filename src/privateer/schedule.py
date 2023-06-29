@@ -11,15 +11,32 @@ from privateer.config import PrivateerHost, PrivateerTarget
 from privateer.docker_helpers import DockerClient
 
 
-def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
+def generate_config(target: PrivateerTarget):
+    for s in target.schedules:
+        with open(f"offen/{target.name}-{s.name}.conf", "w") as f:
+            f.write(f"BACKUP_FILENAME={target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz")
+            f.write(f"BACKUP_PRUNING_PREFIX={target.name}-{s.name}-")
+            if s.retention_days is not None:
+                f.write(f"BACKUP_RETENTION_DAYS={s.retention_days}")
+
+
+def get_offen_env(host: PrivateerHost):
     if host.host_type == "local":
-        if not os.path.exists(host.path):
-            msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
-            raise Exception(msg)
-        for t in targets:
-            path = tar_volume(t)
-            res = shutil.copy(path, host.path)
-            print(f"Copied {path} to {res}")
+        return {"SSH_HOST_NAME": host.hostname,
+                "SSH_REMOTE_PATH": host.path,
+                "SSH_USER": host.user
+                }
+
+
+def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
+    env = get_offen_env(host);
+    if host.host_type == "local":
+        # schedule backup
+        env = {"SSH_HOST_NAME": host.hostname,
+               "SSH_REMOTE_PATH": host.path,
+               "SSH_USER": host.user
+               }
+        pass
     else:
         check_host_path(host)
         mounts = [docker.types.Mount("/root/.ssh", "/home/aehill/.ssh",
@@ -29,9 +46,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
         with DockerClient() as cl:
             cl.containers.run(
                 "offen/docker-volume-backup:v2",
-                #  remove=True,
                 mounts=mounts,
-                entrypoint=["backup"],
                 environment={"SSH_HOST_NAME": host.hostname,
                              "SSH_REMOTE_PATH": host.path,
                              "SSH_USER": host.user
