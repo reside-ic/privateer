@@ -24,7 +24,6 @@ class DockerClient:
         pass
 
 
-def containers_matching(prefix, stopped=False):
+def containers_matching(prefix):
     cl = docker.client.from_env()
-    return [x for x in cl.containers.list(stopped)
-            if x.name.startswith(prefix)]
+    return [x for x in cl.containers.list() if x.name.startswith(prefix)]

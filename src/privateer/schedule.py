@@ -7,9 +7,7 @@ import docker
 
 from privateer.backup import check_host_path
 from privateer.config import PrivateerHost, PrivateerTarget
-from privateer.docker_helpers import DockerClient
-
-from privateer.docker_helpers import containers_matching
+from privateer.docker_helpers import DockerClient, containers_matching
 
 
 def generate_config(target: PrivateerTarget):
@@ -46,14 +44,11 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
         generate_config(t)
     path = os.path.abspath("offen")
     mounts.append(docker.types.Mount("/etc/dockervolumebackup/conf.d", path, type="bind"))
-    name = f"privateer_{''.join(random.choices(string.ascii_letters, k=6))}"
+    name = f"privateer_{''.join(random.choices(string.ascii_letters, k=6))}"  # noqa: S311
     with DockerClient() as cl:
-        cl.containers.run("offen/docker-volume-backup:v2",
-                          name=name,
-                          mounts=mounts,
-                          environment=env,
-                          detach=True,
-                          remove=True)
+        cl.containers.run(
+            "offen/docker-volume-backup:v2", name=name, mounts=mounts, environment=env, detach=True, remove=True
+        )
     return True
 
 
