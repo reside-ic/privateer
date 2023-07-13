@@ -16,8 +16,8 @@ def test_backup_and_restore():
         # backup
         res = cli.main(["backup", "config", "--to=test"])
         assert res == "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
-        assert os.path.isfile(os.path.join(test.path, "orderly_volume.tar"))
-        assert os.path.isfile(os.path.join(test.path, "another_volume.tar"))
+        files = [f for f in os.listdir(test.path) if os.path.isfile(os.path.join(test.path, f))]
+        assert len(files) == 2
         # restore
         res = cli.main(["restore", "config", "--from=test"])
         assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'test'"

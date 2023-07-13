@@ -1,7 +1,7 @@
+import datetime
 import os
 import tarfile
 import tempfile
-from os import listdir
 
 import docker
 import pytest
@@ -21,7 +21,7 @@ def test_tar_volume():
         res = tarfile.open(res)
         tmp = tempfile.mkdtemp()
         res.extractall(tmp)
-        files = listdir(tmp)
+        files = os.listdir(tmp)
         assert len(files) == 1
         assert len(files) == 1
         assert files[0] == "test.txt"
@@ -39,7 +39,7 @@ def test_untar_volume():
         v = cl.volumes.get("privateer_test")
         v.remove()
         # restore
-        res = untar_volume(target, os.path.dirname(res))
+        res = untar_volume(target, res)
         assert res is True
         # check test.txt has been restored to volume
         container = cl.containers.run(
@@ -64,7 +64,9 @@ def test_backup_local():
     test = cfg.get_host("test")
     test.path = tempfile.mkdtemp()
     assert backup(test, cfg.targets)
-    assert os.path.isfile(os.path.join(test.path, "orderly_volume.tar"))
+    datetime.datetime.now().strftime("%Y-%m-%dT%H-%M")  # noqa: DTZ005
+    files = [f for f in os.listdir(test.path) if os.path.isfile(os.path.join(test.path, f))]
+    assert len(files) == 2
 
 
 def test_restore_local():

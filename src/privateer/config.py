@@ -33,12 +33,14 @@ class PrivateerTarget:
             raise Exception(msg)
         self.name = dat["name"]
         self.type = dat["type"]
-        if "schedule" in dat:
+        if "schedules" in dat:
             self.schedules = [BackupSchedule(s) for s in dat["schedules"]]
-            if len(set([s.name for s in self.schedules])) < len(self.schedules):
-                raise Exception(f"Schedules must have unique names. Found duplicate schedule names for target {self.name}")
+            if len({s.name for s in self.schedules}) < len(self.schedules):
+                ex = f"Schedules must have unique names. Found duplicate schedule names for target {self.name}"
+                raise Exception(ex)
         else:
             self.schedules = []
+
 
 class BackupSchedule:
     def __init__(self, dat):
