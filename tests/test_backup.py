@@ -6,9 +6,10 @@ import tempfile
 import docker
 import pytest
 
-from src.privateer.backup import backup, restore, untar_volume
+from src.privateer.backup import backup
 from src.privateer.config import PrivateerConfig, PrivateerTarget
 from src.privateer.docker_helpers import DockerClient
+from src.privateer.restore import restore, untar_volume
 
 
 def test_tar_volume():

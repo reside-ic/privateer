@@ -11,8 +11,9 @@ Options:
 import docopt
 
 import privateer.__about__ as about
-from privateer.backup import backup, restore
+from privateer.backup import backup
 from privateer.config import PrivateerConfig
+from privateer.restore import restore
 
 
 def main(argv=None):

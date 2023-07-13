@@ -3,9 +3,9 @@ import os
 import tempfile
 import time
 
+from src.privateer.backup import cancel_scheduled_backups, schedule_backups
 from src.privateer.config import PrivateerConfig
 from src.privateer.docker_helpers import DockerClient
-from src.privateer.schedule import cancel_scheduled_backups, schedule_backups
 
 
 def test_schedules():
@@ -28,5 +28,6 @@ def test_schedules():
 
         # stop backups
         cancel_scheduled_backups()
+        time.sleep(5)
         privateer_containers = [c for c in cl.containers.list() if c.name.startswith("privateer")]
         assert len(privateer_containers) == 0
