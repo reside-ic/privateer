@@ -6,7 +6,7 @@ import tempfile
 import docker
 import pytest
 
-from src.privateer.backup import backup, restore, tar_volume, untar_volume
+from src.privateer.backup import backup, restore, untar_volume
 from src.privateer.config import PrivateerConfig, PrivateerTarget
 from src.privateer.docker_helpers import DockerClient
 
@@ -140,3 +140,20 @@ def test_local_host_dir_validation():
     with pytest.raises(Exception) as err:
         backup(test, cfg.targets)
     assert str(err.value) == "Host path 'badpath' does not exist. Either make directory or fix config."
+
+
+def tar_volume(target: PrivateerTarget):
+    tmp = tempfile.gettempdir()
+    local_backup_path = os.path.join(tmp, "backup")
+    if not os.path.exists(local_backup_path):
+        os.mkdir(local_backup_path)
+    volume_mount = docker.types.Mount("/data", target.name)
+    backup_mount = docker.types.Mount("/backup", local_backup_path, type="bind")
+    with DockerClient() as cl:
+        cl.containers.run(
+            "ubuntu",
+            remove=True,
+            mounts=[volume_mount, backup_mount],
+            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data", "."],
+        )
+    return f"{local_backup_path}/{target.name}.tar"

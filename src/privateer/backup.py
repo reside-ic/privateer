@@ -88,23 +88,6 @@ def check_host_path(host: PrivateerHost):
                 raise Exception(msg) from err
 
 
-def tar_volume(target: PrivateerTarget):
-    tmp = tempfile.gettempdir()
-    local_backup_path = os.path.join(tmp, "backup")
-    if not os.path.exists(local_backup_path):
-        os.mkdir(local_backup_path)
-    volume_mount = docker.types.Mount("/data", target.name)
-    backup_mount = docker.types.Mount("/backup", local_backup_path, type="bind")
-    with DockerClient() as cl:
-        cl.containers.run(
-            "ubuntu",
-            remove=True,
-            mounts=[volume_mount, backup_mount],
-            command=["tar", "cvf", f"/backup/{target.name}.tar", "-C", "/data", "."],
-        )
-    return f"{local_backup_path}/{target.name}.tar"
-
-
 def untar_volume(target: PrivateerTarget, backup_path):
     volume_mount = docker.types.Mount("/data", target.name)
     backup_mount = docker.types.Mount(f"/backup/{backup_path}", backup_path, type="bind")
