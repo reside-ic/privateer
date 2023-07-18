@@ -97,17 +97,19 @@ def test_multiple_host_schedules():
         os.mkdir(test.path)
     try:
         # schedule
-        res = cli.main(["schedule", "config", "--to=test"])
-        assert res == "Scheduled backups of targets 'orderly_volume', 'another_volume' to host 'test'"
+        res = cli.main(["schedule", "config", "--to=test", "--include=orderly_volume"])
+        assert res == "Scheduled backups of target 'orderly_volume' to host 'test'"
 
-        res = cli.main(["schedule", "config", "--to=another_test"])
-        assert res == "Scheduled backups of targets 'orderly_volume', 'another_volume' to host 'another_test'"
+        res = cli.main(["schedule", "config", "--to=another_test", "--include=another_volume"])
+        assert res == "Scheduled backups of target 'another_volume' to host 'another_test'"
 
         # check status
         res = cli.main(["status"])
         assert res.startswith("2 hosts receiving backups:")
         assert '"name": "test"' in res
+        assert '"name": "orderly_volume"' in res
         assert '"name": "another_test"' in res
+        assert '"name": "another_volume"' in res
 
         # stop backups just for one host
         res = cli.main(["cancel", "--host=test"])
@@ -118,6 +120,9 @@ def test_multiple_host_schedules():
         res = cli.main(["status"])
         assert res.startswith("1 host receiving backups:")
         assert '"name": "another_test"' in res
+        assert '"name": "another_volume"' in res
+        assert '"name": "test"' not in res
+        assert '"name": "orderly_volume"' not in res
 
         # stop all backups
         res = cli.main(["cancel"])
