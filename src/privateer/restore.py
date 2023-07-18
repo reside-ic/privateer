@@ -11,25 +11,27 @@ from privateer.config import PrivateerHost, PrivateerTarget
 from privateer.docker_helpers import DockerClient
 
 
-def restore_local_backup(host: PrivateerHost, target: PrivateerTarget, prompt):
+def restore_local_backup(host: PrivateerHost, target: PrivateerTarget, require_prompt):
     path = get_most_recent_backup(host.path, target.name)
     if path is None:
         msg = f"No backups found. Not restoring {target.name}"
         print(msg)
         return False
     else:
-        if not prompt or click.confirm(f"About to restore file {path}. Continue?", default=True):
+        if not require_prompt or click.confirm(f"About to restore file {path}. Continue?", default=True):
             untar_volume(target, path)
             print(f"Restored {path} to {target.name}")
             return True
         return False
 
 
-def restore_remote_backup(host: PrivateerHost, target: PrivateerTarget, c: Connection, local_backup_path, prompt):
+def restore_remote_backup(
+    host: PrivateerHost, target: PrivateerTarget, c: Connection, local_backup_path, require_prompt
+):
     res = c.run(f"ls -t {host.path}/{target.name}-*.tar.gz | head -1", in_stream=False, pty=True)
     if res.ok:
         file = res.stdout.strip()
-        if not prompt or click.confirm(f"About to restore file {file}. Continue?", default=True):
+        if not require_prompt or click.confirm(f"About to restore file {file}. Continue?", default=True):
             c.get(file, f"{local_backup_path}/")
             untar_volume(target, f"{local_backup_path}/{os.path.basename(file)}")
             print(f"Restored {file} to {target.name}")
@@ -42,17 +44,17 @@ def restore_remote_backup(host: PrivateerHost, target: PrivateerTarget, c: Conne
         return False
 
 
-def restore(host: PrivateerHost, targets: List[PrivateerTarget], prompt):
+def restore(host: PrivateerHost, targets: List[PrivateerTarget], require_prompt):
     success = []
     if host.host_type == "local":
         for t in targets:
-            if restore_local_backup(host, t, prompt):
+            if restore_local_backup(host, t, require_prompt):
                 success.append(t.name)
     else:
         with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             with tempfile.TemporaryDirectory() as local_backup_path:
                 for t in targets:
-                    if restore_remote_backup(host, t, c, local_backup_path, prompt):
+                    if restore_remote_backup(host, t, c, local_backup_path, require_prompt):
                         success.append(t.name)
     return success
 

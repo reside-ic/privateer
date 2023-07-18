@@ -57,8 +57,8 @@ def do_restore(opts):
     if len(targets) == 0:
         return "No targets selected. Doing nothing."
     host = cfg.get_host(opts["--from"])
-    prompt = not opts["--y"]
-    success = restore(host, targets, prompt)
+    require_prompt = not opts["--y"]
+    success = restore(host, targets, require_prompt)
     if len(success) > 0:
         names = ", ".join([f"'{s}'" for s in success])
         target_str = "targets" if len(success) > 1 else "target"
