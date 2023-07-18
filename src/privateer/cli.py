@@ -52,6 +52,8 @@ def do_backup(opts):
 def do_restore(opts):
     cfg = PrivateerConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
+    if len(targets) == 0:
+        return "No targets selected. Doing nothing."
     host = cfg.get_host(opts["--from"])
     success = restore(host, targets)
     if len(success) > 0:
@@ -66,6 +68,8 @@ def do_restore(opts):
 def schedule(opts):
     cfg = PrivateerConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
+    if len(targets) == 0:
+        return "No targets selected. Doing nothing."
     host = cfg.get_host(opts["--to"])
     names = ", ".join([f"'{t.name}'" for t in targets])
     target_str = "targets" if len(targets) > 1 else "target"
@@ -95,7 +99,7 @@ def cancel(opts):
     num_cancelled = len(cancelled)
     if num_cancelled > 0:
         host_str = "hosts" if len(cancelled) > 1 else "host"
-        names = ", ".join([f"'{h.name}'" for h in cancelled])
+        names = ", ".join([f"'{h}'" for h in cancelled])
         return f"Cancelled all scheduled backups to {host_str} '{names}'."
     else:
         return "No backups scheduled. Doing nothing."
