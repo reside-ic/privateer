@@ -1,7 +1,7 @@
 """Usage:
   privateer --version
   privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
-  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS] [--y]
   privateer schedule <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
   privateer status
   privateer cancel [--host=HOST]
@@ -9,6 +9,8 @@
 Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
   --include=TARGETS  Comma separated string of target names to include (default is to include all)
+  --host=HOST  Backup host to cancel scheduled backups for (default is to cancel all)
+  --y  Restore without further prompting
 """
 import json
 
@@ -55,7 +57,8 @@ def do_restore(opts):
     if len(targets) == 0:
         return "No targets selected. Doing nothing."
     host = cfg.get_host(opts["--from"])
-    success = restore(host, targets)
+    prompt = not opts["--y"]
+    success = restore(host, targets, prompt)
     if len(success) > 0:
         names = ", ".join([f"'{s}'" for s in success])
         target_str = "targets" if len(success) > 1 else "target"

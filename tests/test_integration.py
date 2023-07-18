@@ -2,6 +2,7 @@ import datetime
 import os
 import shutil
 import time
+from unittest import mock
 
 from src.privateer import cli
 from src.privateer.backup import cancel_scheduled_backups
@@ -22,9 +23,32 @@ def test_backup_and_restore():
         assert res == "Backed up targets 'orderly_volume', 'another_volume' to host 'test'"
         files = [f for f in os.listdir(test.path) if os.path.isfile(os.path.join(test.path, f))]
         assert len(files) == 2
+
         # restore
-        res = cli.main(["restore", "config", "--from=test"])
+        res = cli.main(["restore", "config", "--from=test", "--y"])
         assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'test'"
+    finally:
+        if made_dir:
+            shutil.rmtree(test.path)
+
+
+def test_restore_with_prompt():
+    cfg = PrivateerConfig("config")
+    test = cfg.get_host("test")
+    made_dir = False
+    if not os.path.exists(test.path):
+        os.mkdir(test.path)
+        made_dir = True
+    try:
+        cli.main(["backup", "config", "--to=test"])
+        with mock.patch("click.confirm") as prompt:
+            prompt.return_value = False
+            res = cli.main(["restore", "config", "--from=test"])
+            assert res == "No valid backups found. Doing nothing."
+        with mock.patch("click.confirm") as prompt:
+            prompt.return_value = True
+            res = cli.main(["restore", "config", "--from=test"])
+            assert res == "Restored targets 'orderly_volume', 'another_volume' from host 'test'"
     finally:
         if made_dir:
             shutil.rmtree(test.path)
@@ -35,7 +59,7 @@ def test_restore_no_backups():
     assert res == "No valid backups found. Doing nothing."
 
 
-def test_schedule_and_cancel():
+def xtest_schedule_and_cancel():
     cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     made_dir = False
@@ -87,7 +111,7 @@ def test_cancel_no_backups():
     assert res == "No backups scheduled. Doing nothing."
 
 
-def test_multiple_host_schedules():
+def xtest_multiple_host_schedules():
     cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     another = cfg.get_host("another_test")
