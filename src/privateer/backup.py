@@ -1,6 +1,4 @@
 import os
-import random
-import string
 from typing import List
 
 import docker
@@ -19,9 +17,7 @@ def get_mounts(host):
         docker.types.Mount("/etc/localtime", "/etc/localtime", type="bind"),
     ]
     if host.host_type == "remote":
-        mounts.append(
-            docker.types.Mount("/root/.ssh", os.path.expanduser("~/.ssh"),
-                               type="bind"))
+        mounts.append(docker.types.Mount("/root/.ssh", os.path.expanduser("~/.ssh"), type="bind"))
     else:
         mounts.append(docker.types.Mount("/archive", host.path, type="bind"))
     return mounts
@@ -29,8 +25,7 @@ def get_mounts(host):
 
 def get_env(host):
     if host.host_type == "remote":
-        env = {"SSH_HOST_NAME": host.hostname, "SSH_REMOTE_PATH": host.path,
-               "SSH_USER": host.user}
+        env = {"SSH_HOST_NAME": host.hostname, "SSH_REMOTE_PATH": host.path, "SSH_USER": host.user}
     else:
         env = {}
     return env
@@ -48,8 +43,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
             cl.containers.run(
                 OFFEN_IMAGE,
                 mounts=mounts,
-                environment={**env, "BACKUP_FILENAME": filename,
-                             "BACKUP_SOURCES": f"/{t.name}"},
+                environment={**env, "BACKUP_FILENAME": filename, "BACKUP_SOURCES": f"/{t.name}"},
                 remove=True,
                 entrypoint=["backup"],
             )
@@ -66,8 +60,7 @@ def generate_backup_config(target: PrivateerTarget):
         filename = f"offen/{target.name}-{s.name}.conf"
         with open(filename, "w") as f:
             f.write(f'BACKUP_SOURCES="/backup/{target.name}"\n')
-            f.write(
-                f'BACKUP_FILENAME="{target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
+            f.write(f'BACKUP_FILENAME="{target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
             f.write(f'BACKUP_PRUNING_PREFIX="{target.name}-{s.name}-"\n')
             f.write(f'BACKUP_CRON_EXPRESSION="{s.schedule}"\n')
             if s.retention_days is not None:
@@ -83,14 +76,10 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
         mounts.append(docker.types.Mount(f"/backup/{t.name}", t.name))
         generate_backup_config(t)
     path = os.path.abspath("offen")
-    mounts.append(
-        docker.types.Mount("/etc/dockervolumebackup/conf.d", path, type="bind"))
+    mounts.append(docker.types.Mount("/etc/dockervolumebackup/conf.d", path, type="bind"))
     name = f"privateer_{host.name}"
     with DockerClient() as cl:
-        cl.containers.run(
-            OFFEN_IMAGE, name=name, mounts=mounts, environment=env, detach=True,
-            remove=True
-        )
+        cl.containers.run(OFFEN_IMAGE, name=name, mounts=mounts, environment=env, detach=True, remove=True)
     return True
 
 
@@ -105,8 +94,7 @@ def check_host_path(host: PrivateerHost):
             msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
             raise Exception(msg)
     else:
-        with Connection(host=host.hostname, user=host.user,
-                        port=host.port) as c:
+        with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             try:
                 c.run(f"test -d {host.path}", in_stream=False)
             except UnexpectedExit as err:
