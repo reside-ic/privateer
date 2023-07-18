@@ -16,17 +16,22 @@
 
 ```Usage:
   privateer --version
-  privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=INCLUDE]
-  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=INCLUDE]
+  privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer schedule <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer status
+  privateer cancel [--host=HOST]
 
 Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
   --include=TARGETS  Comma separated string of target names to include (default is to include all)
+  --host=HOST  Backup host to cancel scheduled backups for (default is to cancel all)
 ```
 
 `<path>` is the path to a directory containing a `privateer.json` file. This file should contain at least one target 
 and at least one host. See `./config/privateer.json` for an example. By default all targets in the config file are used, 
-but this can be overridden by explicitly including or excluding targets by name.
+but this can be overridden by explicitly including or excluding targets by name. Backups can be scheduled to multiple 
+hosts simultaneously by running `privateer schedule` multiple times.
 
 ## Test and lint
 
