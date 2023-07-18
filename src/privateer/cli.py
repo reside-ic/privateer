@@ -10,6 +10,7 @@ Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
   --include=TARGETS  Comma separated string of target names to include (default is to include all)
 """
+import json
 
 import docopt
 
@@ -23,25 +24,16 @@ def main(argv=None):
     opts = docopt.docopt(__doc__, argv)
     if opts["--version"]:
         return about.__version__
-    cfg = PrivateerConfig(opts["<path>"])
-    targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
-    if len(targets) == 0:
-        return "No targets selected. Doing nothing."
     if opts["backup"]:
         return do_backup(opts)
     elif opts["restore"]:
         return do_restore(opts)
     elif opts["schedule"]:
-        return do_schedule(opts)
+        return schedule(opts)
     elif opts["status"]:
-        schedules = list_scheduled_backups()
-        if len(schedules) > 0:
-            return "\n".join([f"'{s}'" for s in schedules])
-        else:
-            return "No backups scheduled."
+        return get_schedules()
     elif opts["cancel"]:
-        cancel_scheduled_backups()
-        return "Canceled all scheduled backups."
+        return cancel(opts)
 
 
 def do_backup(opts):
@@ -71,7 +63,7 @@ def do_restore(opts):
     return msg
 
 
-def do_schedule(opts):
+def schedule(opts):
     cfg = PrivateerConfig(opts["<path>"])
     targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
     host = cfg.get_host(opts["--to"])
@@ -84,13 +76,40 @@ def do_schedule(opts):
         return f"Scheduling failed. Logs from container:\n {res}"
 
 
+def get_schedules():
+    schedules = list_scheduled_backups()
+    num_hosts = len(schedules)
+    if num_hosts > 0:
+        host_str = "hosts" if num_hosts > 1 else "host"
+        msg = f"{num_hosts} {host_str} receiving backups:"
+        for s in schedules:
+            msg = f"{msg}\n{json.dumps(s, indent=4)}"
+        return msg
+    else:
+        return "No backups scheduled."
+
+
+def cancel(opts):
+    host = opts["--host"]
+    cancelled = cancel_scheduled_backups(host)
+    num_cancelled = len(cancelled)
+    if num_cancelled > 0:
+        host_str = "hosts" if len(cancelled) > 1 else "host"
+        names = ", ".join([f"'{h.name}'" for h in cancelled])
+        return f"Cancelled all scheduled backups to {host_str} '{names}'."
+    else:
+        return "No backups scheduled. Doing nothing."
+
+
 def get_targets(include, exclude, all_targets):
     if include and exclude:
         msg = "At most one of --include or --exclude should be provided."
         raise Exception(msg)
     if include:
-        return [t for t in all_targets if t.name in [i.strip() for i in include.split(",")]]
+        return [t for t in all_targets if
+                t.name in [i.strip() for i in include.split(",")]]
     elif exclude:
-        return [t for t in all_targets if t.name not in [e.strip() for e in exclude.split(",")]]
+        return [t for t in all_targets if
+                t.name not in [e.strip() for e in exclude.split(",")]]
     else:
         return all_targets

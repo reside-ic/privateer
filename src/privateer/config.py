@@ -2,8 +2,9 @@ import json
 import os.path
 
 
-class PrivateerHost:
+class PrivateerHost(dict):
     def __init__(self, dat):
+        dict.__init__(self)
         host_type = dat["type"]
         if host_type != "remote" and host_type != "local":
             msg = "Host type must be 'remote' or 'local'."
@@ -25,9 +26,15 @@ class PrivateerHost:
             else:
                 self.port = None
 
+    def __getattr__(self, key):
+        return self[key]
 
-class PrivateerTarget:
+    def __setattr__(self, key, value):
+        self[key] = value
+
+class PrivateerTarget(dict):
     def __init__(self, dat):
+        dict.__init__(self)
         if dat["type"] != "volume":
             msg = "Only 'volume' targets are supported."
             raise Exception(msg)
@@ -41,9 +48,15 @@ class PrivateerTarget:
         else:
             self.schedules = []
 
+    def __getattr__(self, key):
+        return self[key]
 
-class BackupSchedule:
+    def __setattr__(self, key, value):
+        self[key] = value
+
+class BackupSchedule(dict):
     def __init__(self, dat):
+        dict.__init__(self)
         self.name = dat["name"]
         if dat["name"] == "daily":
             self.schedule = "0 2 * * *"
@@ -58,13 +71,26 @@ class BackupSchedule:
         else:
             self.retention_days = None
 
+    def __getattr__(self, key):
+        return self[key]
 
-class PrivateerConfig:
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
+class PrivateerConfig(dict):
     def __init__(self, path):
         with open(f"{path}/privateer.json") as f:
             config = json.load(f)
         self.targets = [PrivateerTarget(t) for t in config["targets"]]
         self.hosts = [PrivateerHost(h) for h in config["hosts"]]
+        dict.__init__(self)
+
+    def __getattr__(self, key):
+        return self[key]
+
+    def __setattr__(self, key, value):
+        self[key] = value
 
     def get_host(self, name):
         match = [h for h in self.hosts if h.name == name]
@@ -75,3 +101,4 @@ class PrivateerConfig:
             msg = f"Invalid arguments: no host with the name '{name}' found."
             raise Exception(msg)
         return match[0]
+
