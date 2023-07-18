@@ -2,11 +2,31 @@
   "targets": [
     {
       "name": "orderly_volume",
-      "type": "volume"
+      "type": "volume",
+      "schedules": [
+        {
+          "name": "daily",
+          "retention_days": 7
+        },
+        {
+          "name": "weekly",
+          "retention_days": 31
+        },
+        {
+          "name": "monthly"
+        }
+      ]
     },
     {
       "name": "another_volume",
-      "type": "volume"
+      "type": "volume",
+      "schedules": [
+        {
+          "name": "custom",
+          "cron": "* * * * *",
+          "retention_days": 12
+        }
+      ]
     }
   ],
   "hosts": [

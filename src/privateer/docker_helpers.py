@@ -22,3 +22,8 @@ class DockerClient:
 
     def __exit__(self, t, value, traceback):
         pass
+
+
+def containers_matching(prefix):
+    cl = docker.client.from_env()
+    return [x for x in cl.containers.list() if x.name.startswith(prefix)]
