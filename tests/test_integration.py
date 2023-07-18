@@ -59,7 +59,7 @@ def test_restore_no_backups():
     assert res == "No valid backups found. Doing nothing."
 
 
-def xtest_schedule_and_cancel():
+def test_schedule_and_cancel():
     cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     made_dir = False
@@ -111,7 +111,7 @@ def test_cancel_no_backups():
     assert res == "No backups scheduled. Doing nothing."
 
 
-def xtest_multiple_host_schedules():
+def test_multiple_host_schedules():
     cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     another = cfg.get_host("another_test")
