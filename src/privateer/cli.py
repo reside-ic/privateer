@@ -2,6 +2,9 @@
   privateer --version
   privateer backup <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
   privateer restore <path> --from=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer schedule <path> --to=HOST [--exclude=TARGETS] [--include=TARGETS]
+  privateer status
+  privateer cancel [--host=HOST]
 
 Options:
   --exclude=TARGETS  Comma separated string of target names to exclude (default is to include all)
@@ -11,7 +14,7 @@ Options:
 import docopt
 
 import privateer.__about__ as about
-from privateer.backup import backup
+from privateer.backup import backup, schedule_backups, cancel_scheduled_backups, list_scheduled_backups
 from privateer.config import PrivateerConfig
 from privateer.restore import restore
 
@@ -25,22 +28,60 @@ def main(argv=None):
     if len(targets) == 0:
         return "No targets selected. Doing nothing."
     if opts["backup"]:
-        host = cfg.get_host(opts["--to"])
-        names = ", ".join([f"'{t.name}'" for t in targets])
-        target_str = "targets" if len(targets) > 1 else "target"
-        msg = f"Backed up {target_str} {names} to host '{host.name}'"
-        backup(host, targets)
-        return msg
+        return do_backup(opts)
     elif opts["restore"]:
-        host = cfg.get_host(opts["--from"])
-        success = restore(host, targets)
-        if len(success) > 0:
-            names = ", ".join([f"'{s}'" for s in success])
-            target_str = "targets" if len(success) > 1 else "target"
-            msg = f"Restored {target_str} {names} from host '{host.name}'"
+        return do_restore(opts)
+    elif opts["schedule"]:
+        return do_schedule(opts)
+    elif opts["status"]:
+        schedules = list_scheduled_backups()
+        if len(schedules) > 0:
+            return "\n".join([f"'{s}'" for s in schedules])
         else:
-            msg = "No valid backups found. Doing nothing."
-        return msg
+            return "No backups scheduled."
+    elif opts["cancel"]:
+        cancel_scheduled_backups()
+        return "Canceled all scheduled backups."
+
+
+def do_backup(opts):
+    cfg = PrivateerConfig(opts["<path>"])
+    targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
+    if len(targets) == 0:
+        return "No targets selected. Doing nothing."
+    host = cfg.get_host(opts["--to"])
+    names = ", ".join([f"'{t.name}'" for t in targets])
+    target_str = "targets" if len(targets) > 1 else "target"
+    msg = f"Backed up {target_str} {names} to host '{host.name}'"
+    backup(host, targets)
+    return msg
+
+
+def do_restore(opts):
+    cfg = PrivateerConfig(opts["<path>"])
+    targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
+    host = cfg.get_host(opts["--from"])
+    success = restore(host, targets)
+    if len(success) > 0:
+        names = ", ".join([f"'{s}'" for s in success])
+        target_str = "targets" if len(success) > 1 else "target"
+        msg = f"Restored {target_str} {names} from host '{host.name}'"
+    else:
+        msg = "No valid backups found. Doing nothing."
+    return msg
+
+
+def do_schedule(opts):
+    cfg = PrivateerConfig(opts["<path>"])
+    targets = get_targets(opts["--include"], opts["--exclude"], cfg.targets)
+    host = cfg.get_host(opts["--to"])
+    names = ", ".join([f"'{t.name}'" for t in targets])
+    target_str = "targets" if len(targets) > 1 else "target"
+    res = schedule_backups(host, targets)
+    if res is True:
+        return f"Scheduled backups of {target_str} {names} to host '{host.name}'"
+    else:
+        return f"Scheduling failed. Logs from container:\n {res}"
 
 
 def get_targets(include, exclude, all_targets):

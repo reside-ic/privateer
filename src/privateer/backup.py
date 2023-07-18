@@ -1,6 +1,5 @@
+import json
 import os
-import random
-import string
 from typing import List
 
 import docker
@@ -9,6 +8,10 @@ from invoke import UnexpectedExit
 
 from privateer.config import PrivateerHost, PrivateerTarget
 from privateer.docker_helpers import DockerClient, containers_matching
+from privateer.docker_helpers import string_into_container, string_from_container
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+OFFEN_DIR = os.path.join(ROOT_DIR, "offen")
 
 
 def get_mounts(host):
@@ -50,15 +53,15 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
     return True
 
 
-def generate_backup_config(target: PrivateerTarget):
+def generate_backup_config(target: PrivateerTarget, conf_path):
     if len(target.schedules) == 0:
         msg = f"No backup schedules defined for target {target.name}"
         raise Exception(msg)
-    if not os.path.exists("offen"):
-        os.mkdir("offen")
+    if not os.path.exists(conf_path):
+        os.makedirs(conf_path)
     filenames = []
     for s in target.schedules:
-        filename = f"offen/{target.name}-{s.name}.conf"
+        filename = f"{conf_path}/{target.name}-{s.name}.conf"
         filenames.append(filename)
         with open(filename, "w") as f:
             f.write(f'BACKUP_SOURCES="/backup/{target.name}"\n')
@@ -74,22 +77,42 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
     check_host_path(host)
     mounts = get_mounts(host)
     env = get_env(host)
+    offen_conf_path = os.path.join(os.path.abspath(OFFEN_DIR), host.name)
     for t in targets:
         mounts.append(docker.types.Mount(f"/backup/{t.name}", t.name))
-        generate_backup_config(t)
-    path = os.path.abspath("offen")
-    mounts.append(docker.types.Mount("/etc/dockervolumebackup/conf.d", path, type="bind"))
-    name = f"privateer_{''.join(random.choices(string.ascii_letters, k=6))}"  # noqa: S311
+        generate_backup_config(t, offen_conf_path)
+    mounts.append(docker.types.Mount("/etc/dockervolumebackup/conf.d", offen_conf_path, type="bind"))
+    name = f"privateer_{host.name}"
     with DockerClient() as cl:
-        cl.containers.run(
-            "offen/docker-volume-backup:v2", name=name, mounts=mounts, environment=env, detach=True, remove=True
+        container = cl.containers.run(
+            "offen/docker-volume-backup:v2", name=name, mounts=mounts, environment=env, detach=True
         )
-    return True
+        string_into_container(json.dumps({"host": host.name}),
+                              container,
+                              "/etc/dockervolumebackup/config.json")
+        if container.status in ["running", "created"]:
+            return True
+        else:
+            return container.logs().decode("UTF-8")
+
+
+def list_scheduled_backups():
+    running = containers_matching("privateer")
+    if len(running) == 0:
+        return []
+    else:
+        return [string_from_container(container,
+                              "/etc/dockervolumebackup/config.json") for container in running]
+
+
+def get_host_conf_path(name):
+    return os.path.join(OFFEN_DIR, name)
 
 
 def cancel_scheduled_backups():
     running = containers_matching("privateer")
     [r.stop() for r in running]
+    [r.remove() for r in running]
 
 
 def check_host_path(host: PrivateerHost):
@@ -104,3 +127,4 @@ def check_host_path(host: PrivateerHost):
             except UnexpectedExit as err:
                 msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
                 raise Exception(msg) from err
+
