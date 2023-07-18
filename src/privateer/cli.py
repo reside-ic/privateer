@@ -100,7 +100,7 @@ def cancel(opts):
     if num_cancelled > 0:
         host_str = "hosts" if len(cancelled) > 1 else "host"
         names = ", ".join([f"'{h}'" for h in cancelled])
-        return f"Cancelled all scheduled backups to {host_str} '{names}'."
+        return f"Cancelled all scheduled backups to {host_str} {names}."
     else:
         return "No backups scheduled. Doing nothing."
 

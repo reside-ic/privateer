@@ -9,8 +9,7 @@ from invoke import UnexpectedExit
 from privateer.config import PrivateerHost, PrivateerTarget
 from privateer.docker_helpers import DockerClient, containers_matching, string_from_container, string_into_container
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-OFFEN_DIR = os.path.join(ROOT_DIR, "offen")
+OFFEN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "offen")
 OFFEN_IMAGE = "offen/docker-volume-backup:v2"
 
 
@@ -111,7 +110,7 @@ def cancel_scheduled_backups(host):
         running = containers_matching(f"privateer_{host}")
     else:
         running = containers_matching("privateer")
-    names = [r.name for r in running]
+    names = [r.name.replace("privateer_", "") for r in running]
     [r.stop() for r in running]
     [r.remove() for r in running]
     return names

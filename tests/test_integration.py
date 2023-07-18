@@ -62,15 +62,71 @@ def test_schedule_and_cancel():
             # check status
             res = cli.main(["status"])
             assert res.startswith("1 host receiving backups:")
+            assert '"name": "test"' in res
+            assert '"name": "another_volume"' in res
 
             # stop backups
             res = cli.main(["cancel", "--host=test"])
             assert res == "Cancelled all scheduled backups to host 'test'."
             time.sleep(5)
+
             privateer_containers = [c for c in cl.containers.list() if c.name.startswith("privateer")]
             assert len(privateer_containers) == 0
 
+            # check status again
+            res = cli.main(["status"])
+            assert res == "No backups scheduled."
     finally:
         cancel_scheduled_backups(host=None)
         if made_dir:
             shutil.rmtree(test.path)
+
+
+def test_cancel_no_backups():
+    res = cli.main(["cancel"])
+    assert res == "No backups scheduled. Doing nothing."
+
+
+def test_multiple_host_schedules():
+    cfg = PrivateerConfig("config")
+    test = cfg.get_host("test")
+    another = cfg.get_host("another_test")
+    if not os.path.exists(another.path):
+        os.mkdir(another.path)
+    if not os.path.exists(test.path):
+        os.mkdir(test.path)
+    try:
+        # schedule
+        res = cli.main(["schedule", "config", "--to=test"])
+        assert res == "Scheduled backups of targets 'orderly_volume', 'another_volume' to host 'test'"
+
+        res = cli.main(["schedule", "config", "--to=another_test"])
+        assert res == "Scheduled backups of targets 'orderly_volume', 'another_volume' to host 'another_test'"
+
+        # check status
+        res = cli.main(["status"])
+        assert res.startswith("2 hosts receiving backups:")
+        assert '"name": "test"' in res
+        assert '"name": "another_test"' in res
+
+        # stop backups just for one host
+        res = cli.main(["cancel", "--host=test"])
+        assert res == "Cancelled all scheduled backups to host 'test'."
+        time.sleep(1)
+
+        # check status again
+        res = cli.main(["status"])
+        assert res.startswith("1 host receiving backups:")
+        assert '"name": "another_test"' in res
+
+        # stop all backups
+        res = cli.main(["cancel"])
+        assert res == "Cancelled all scheduled backups to host 'another_test'."
+        time.sleep(1)
+
+        # check status again
+        res = cli.main(["status"])
+        assert res == "No backups scheduled."
+    finally:
+        shutil.rmtree(test.path)
+        shutil.rmtree(another.path)

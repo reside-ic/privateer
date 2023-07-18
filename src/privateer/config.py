@@ -2,9 +2,20 @@ import json
 import os.path
 
 
-class PrivateerHost(dict):
-    def __init__(self, dat):
+class Serializable(dict):
+    def __init__(self):
         dict.__init__(self)
+
+    def __getattr__(self, key):
+        return self[key]
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
+class PrivateerHost(Serializable):
+    def __init__(self, dat):
+        Serializable.__init__(self)
         host_type = dat["type"]
         if host_type != "remote" and host_type != "local":
             msg = "Host type must be 'remote' or 'local'."
@@ -26,16 +37,10 @@ class PrivateerHost(dict):
             else:
                 self.port = None
 
-    def __getattr__(self, key):
-        return self[key]
 
-    def __setattr__(self, key, value):
-        self[key] = value
-
-
-class PrivateerTarget(dict):
+class PrivateerTarget(Serializable):
     def __init__(self, dat):
-        dict.__init__(self)
+        Serializable.__init__(self)
         if dat["type"] != "volume":
             msg = "Only 'volume' targets are supported."
             raise Exception(msg)
@@ -49,16 +54,10 @@ class PrivateerTarget(dict):
         else:
             self.schedules = []
 
-    def __getattr__(self, key):
-        return self[key]
 
-    def __setattr__(self, key, value):
-        self[key] = value
-
-
-class BackupSchedule(dict):
+class BackupSchedule(Serializable):
     def __init__(self, dat):
-        dict.__init__(self)
+        Serializable.__init__(self)
         self.name = dat["name"]
         if dat["name"] == "daily":
             self.schedule = "0 2 * * *"
@@ -73,26 +72,14 @@ class BackupSchedule(dict):
         else:
             self.retention_days = None
 
-    def __getattr__(self, key):
-        return self[key]
 
-    def __setattr__(self, key, value):
-        self[key] = value
-
-
-class PrivateerConfig(dict):
+class PrivateerConfig(Serializable):
     def __init__(self, path):
+        Serializable.__init__(self)
         with open(f"{path}/privateer.json") as f:
             config = json.load(f)
         self.targets = [PrivateerTarget(t) for t in config["targets"]]
         self.hosts = [PrivateerHost(h) for h in config["hosts"]]
-        dict.__init__(self)
-
-    def __getattr__(self, key):
-        return self[key]
-
-    def __setattr__(self, key, value):
-        self[key] = value
 
     def get_host(self, name):
         match = [h for h in self.hosts if h.name == name]
