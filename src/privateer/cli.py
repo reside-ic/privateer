@@ -15,7 +15,7 @@ import json
 import docopt
 
 import privateer.__about__ as about
-from privateer.backup import backup, schedule_backups, cancel_scheduled_backups, list_scheduled_backups
+from privateer.backup import backup, cancel_scheduled_backups, list_scheduled_backups, schedule_backups
 from privateer.config import PrivateerConfig
 from privateer.restore import restore
 
@@ -106,10 +106,8 @@ def get_targets(include, exclude, all_targets):
         msg = "At most one of --include or --exclude should be provided."
         raise Exception(msg)
     if include:
-        return [t for t in all_targets if
-                t.name in [i.strip() for i in include.split(",")]]
+        return [t for t in all_targets if t.name in [i.strip() for i in include.split(",")]]
     elif exclude:
-        return [t for t in all_targets if
-                t.name not in [e.strip() for e in exclude.split(",")]]
+        return [t for t in all_targets if t.name not in [e.strip() for e in exclude.split(",")]]
     else:
         return all_targets

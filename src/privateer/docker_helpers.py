@@ -33,14 +33,6 @@ def containers_matching(prefix):
     return [x for x in cl.containers.list() if x.name.startswith(prefix)]
 
 
-def exec_safely(container, args):
-    ans = container.exec_run(args)
-    if ans[0] != 0:
-        print(ans[1].decode("UTF-8"))
-        raise Exception("Error running command (see above for log)")
-    return ans
-
-
 def simple_tar(path, name):
     f = tempfile.NamedTemporaryFile()
     t = tarfile.open(mode="w", fileobj=f)

@@ -32,6 +32,7 @@ class PrivateerHost(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+
 class PrivateerTarget(dict):
     def __init__(self, dat):
         dict.__init__(self)
@@ -53,6 +54,7 @@ class PrivateerTarget(dict):
 
     def __setattr__(self, key, value):
         self[key] = value
+
 
 class BackupSchedule(dict):
     def __init__(self, dat):
@@ -101,4 +103,3 @@ class PrivateerConfig(dict):
             msg = f"Invalid arguments: no host with the name '{name}' found."
             raise Exception(msg)
         return match[0]
-

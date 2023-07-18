@@ -9,7 +9,7 @@ import pytest
 from src.privateer.backup import backup
 from src.privateer.config import PrivateerConfig, PrivateerTarget
 from src.privateer.docker_helpers import DockerClient
-from src.privateer.restore import restore, untar_volume
+from src.privateer.restore import get_most_recent_backup, restore, untar_volume
 
 
 def test_tar_volume():
@@ -64,10 +64,14 @@ def test_backup_local():
     cfg = PrivateerConfig("config")
     test = cfg.get_host("test")
     test.path = tempfile.mkdtemp()
+    now = datetime.datetime.now().strftime("%Y-%m-%dT%H")  # noqa: DTZ005
     assert backup(test, cfg.targets)
-    datetime.datetime.now().strftime("%Y-%m-%dT%H-%M")  # noqa: DTZ005
     files = [f for f in os.listdir(test.path) if os.path.isfile(os.path.join(test.path, f))]
     assert len(files) == 2
+    assert os.path.basename(get_most_recent_backup(test.path, "orderly_volume")) in files
+    assert os.path.basename(get_most_recent_backup(test.path, "another_volume")) in files
+    assert now in files[0]
+    assert now in files[1]
 
 
 def test_restore_local():
