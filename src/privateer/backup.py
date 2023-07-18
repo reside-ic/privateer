@@ -20,9 +20,7 @@ def get_mounts(host):
         docker.types.Mount("/etc/localtime", "/etc/localtime", type="bind"),
     ]
     if host.host_type == "remote":
-        mounts.append(
-            docker.types.Mount("/root/.ssh", os.path.expanduser("~/.ssh"),
-                               type="bind"))
+        mounts.append(docker.types.Mount("/root/.ssh", os.path.expanduser("~/.ssh"), type="bind"))
     else:
         mounts.append(docker.types.Mount("/archive", host.path, type="bind"))
     return mounts
@@ -30,8 +28,7 @@ def get_mounts(host):
 
 def get_env(host):
     if host.host_type == "remote":
-        env = {"SSH_HOST_NAME": host.hostname, "SSH_REMOTE_PATH": host.path,
-               "SSH_USER": host.user}
+        env = {"SSH_HOST_NAME": host.hostname, "SSH_REMOTE_PATH": host.path, "SSH_USER": host.user}
     else:
         env = {}
     return env
@@ -49,8 +46,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
             cl.containers.run(
                 OFFEN_IMAGE,
                 mounts=mounts,
-                environment={**env, "BACKUP_FILENAME": filename,
-                             "BACKUP_SOURCES": f"/{t.name}"},
+                environment={**env, "BACKUP_FILENAME": filename, "BACKUP_SOURCES": f"/{t.name}"},
                 remove=True,
                 entrypoint=["backup"],
             )
@@ -67,8 +63,7 @@ def generate_backup_config(target: PrivateerTarget, conf_path):
         filename = f"{conf_path}/{target.name}-{s.name}.conf"
         with open(filename, "w") as f:
             f.write(f'BACKUP_SOURCES="/backup/{target.name}"\n')
-            f.write(
-                f'BACKUP_FILENAME="{target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
+            f.write(f'BACKUP_FILENAME="{target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
             f.write(f'BACKUP_PRUNING_PREFIX="{target.name}-{s.name}-"\n')
             f.write(f'BACKUP_CRON_EXPRESSION="{s.schedule}"\n')
             if s.retention_days is not None:
@@ -84,13 +79,10 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
     for t in targets:
         mounts.append(docker.types.Mount(f"/backup/{t.name}", t.name))
         generate_backup_config(t, offen_conf_path)
-    mounts.append(
-        docker.types.Mount("/etc/dockervolumebackup/conf.d", offen_conf_path,
-                           type="bind"))
+    mounts.append(docker.types.Mount("/etc/dockervolumebackup/conf.d", offen_conf_path, type="bind"))
     name = f"privateer_{host.name}"
     with DockerClient() as cl:
-        container = cl.containers.run(OFFEN_IMAGE, name=name, mounts=mounts,
-                                      environment=env, detach=True)
+        container = cl.containers.run(OFFEN_IMAGE, name=name, mounts=mounts, environment=env, detach=True)
         record_config_in_container(host, targets, container)
         if container.status in ["running", "created"]:
             return True
@@ -99,10 +91,7 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
 
 
 def record_config_in_container(host, targets, container):
-    string_into_container(
-        json.dumps({"host": host, "targets": targets}), container,
-        DOCKER_OFFEN_CONFIG_PATH
-    )
+    string_into_container(json.dumps({"host": host, "targets": targets}), container, DOCKER_OFFEN_CONFIG_PATH)
 
 
 def list_scheduled_backups():
@@ -110,11 +99,7 @@ def list_scheduled_backups():
     if len(running) == 0:
         return []
     else:
-        return [
-            json.loads(
-                string_from_container(container, DOCKER_OFFEN_CONFIG_PATH)) for
-            container in running
-        ]
+        return [json.loads(string_from_container(container, DOCKER_OFFEN_CONFIG_PATH)) for container in running]
 
 
 def get_host_conf_path(name):
@@ -138,8 +123,7 @@ def check_host_path(host: PrivateerHost):
             msg = f"Host path '{host.path}' does not exist. Either make directory or fix config."
             raise Exception(msg)
     else:
-        with Connection(host=host.hostname, user=host.user,
-                        port=host.port) as c:
+        with Connection(host=host.hostname, user=host.user, port=host.port) as c:
             try:
                 c.run(f"test -d {host.path}", in_stream=False)
             except UnexpectedExit as err:
