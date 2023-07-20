@@ -99,6 +99,8 @@ def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
             return container.logs().decode("UTF-8")
 
 
+# We do this so that we can retrieve the config for currently running backups at any time (since the user could
+# change the config file on disk, we need to save the config used at the point of starting the container)
 def record_config_in_container(host, targets, container):
     string_into_container(json.dumps({"host": host, "targets": targets}), container, DOCKER_OFFEN_CONFIG_PATH)
 
