@@ -90,7 +90,7 @@ def test_restore_local():
         # restore
         with mock.patch("click.confirm") as prompt:
             prompt.return_value = True
-            res = restore(host, [target], prompt=False)
+            res = restore(host, [target], require_prompt=False)
             assert res == ["privateer_test"]
         # check test.txt has been restored to volume
         container = cl.containers.run(
@@ -111,12 +111,12 @@ def test_local_restore_prompt():
     backup(host, [target])
     with mock.patch("click.confirm") as prompt:
         prompt.return_value = False
-        res = restore(host, [target], prompt=True)
+        res = restore(host, [target], require_prompt=True)
         # when prompt is answered in the negative, nothing gets restored
         assert len(res) == 0
     with mock.patch("click.confirm") as prompt:
         prompt.return_value = True
-        res = restore(host, [target], prompt=True)
+        res = restore(host, [target], require_prompt=True)
         # when prompt is answered in the affirmative, restore happens
         assert len(res) == 1
     with DockerClient() as cl:
@@ -138,7 +138,7 @@ def test_restore_remote():
         v = cl.volumes.get("privateer_test")
         v.remove()
         # restore
-        res = restore(host, [target], prompt=False)
+        res = restore(host, [target], require_prompt=False)
         assert res == ["privateer_test"]
 
         # check test.txt has been restored to volume
@@ -161,12 +161,12 @@ def test_remote_restore_prompt():
     backup(host, [target])
     with mock.patch("click.confirm") as prompt:
         prompt.return_value = False
-        res = restore(host, [target], prompt=True)
+        res = restore(host, [target], require_prompt=True)
         # when prompt is answered in the negative, nothing gets restored
         assert len(res) == 0
     with mock.patch("click.confirm") as prompt:
         prompt.return_value = True
-        res = restore(host, [target], prompt=True)
+        res = restore(host, [target], require_prompt=True)
         # when prompt is answered in the affirmative, restore happens
         assert len(res) == 1
     with DockerClient() as cl:
