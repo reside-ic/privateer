@@ -2,6 +2,8 @@ import json
 import os.path
 
 
+# We want these classes to be serializable by the `json` package, so use this base class
+# which inherits from dict and will get correctly serialized by `json.dumps`
 class Serializable(dict):
     def __init__(self):
         dict.__init__(self)
