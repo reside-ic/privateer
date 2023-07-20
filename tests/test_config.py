@@ -9,7 +9,7 @@ def test_config():
     cfg = PrivateerConfig("config")
     assert len(cfg.targets) == 2
     assert cfg.targets[0].name == "orderly_volume"
-    assert len(cfg.hosts) == 3
+    assert len(cfg.hosts) == 4
     assert cfg.hosts[0].name == "production"
     assert cfg.hosts[0].user is None
     assert cfg.hosts[0].port == 10022

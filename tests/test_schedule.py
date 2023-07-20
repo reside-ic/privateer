@@ -12,7 +12,7 @@ def test_schedules():
     cfg = PrivateerConfig("config")
     host = cfg.get_host("test")
     host.path = tempfile.mkdtemp()
-    schedule_backups(host, cfg.targets)
+    assert schedule_backups(host, cfg.targets)
     with DockerClient() as cl:
         privateer_containers = [c for c in cl.containers.list() if c.name.startswith("privateer")]
         assert len(privateer_containers) == 1
@@ -27,7 +27,7 @@ def test_schedules():
         assert files[0].startswith("another_volume-custom")
 
         # stop backups
-        cancel_scheduled_backups()
+        cancel_scheduled_backups(host=None)
         time.sleep(5)
         privateer_containers = [c for c in cl.containers.list() if c.name.startswith("privateer")]
         assert len(privateer_containers) == 0

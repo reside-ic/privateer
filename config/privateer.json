@@ -48,6 +48,11 @@
       "name": "test",
       "path": "starport",
       "type": "local"
+    },
+    {
+      "name": "another_test",
+      "path": "another_starport",
+      "type": "local"
     }
   ]
 }

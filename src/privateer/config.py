@@ -2,8 +2,22 @@ import json
 import os.path
 
 
-class PrivateerHost:
+# We want these classes to be serializable by the `json` package, so use this base class
+# which inherits from dict and will get correctly serialized by `json.dumps`
+class Serializable(dict):
+    def __init__(self):
+        dict.__init__(self)
+
+    def __getattr__(self, key):
+        return self[key]
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
+class PrivateerHost(Serializable):
     def __init__(self, dat):
+        Serializable.__init__(self)
         host_type = dat["type"]
         if host_type != "remote" and host_type != "local":
             msg = "Host type must be 'remote' or 'local'."
@@ -26,8 +40,9 @@ class PrivateerHost:
                 self.port = None
 
 
-class PrivateerTarget:
+class PrivateerTarget(Serializable):
     def __init__(self, dat):
+        Serializable.__init__(self)
         if dat["type"] != "volume":
             msg = "Only 'volume' targets are supported."
             raise Exception(msg)
@@ -42,8 +57,9 @@ class PrivateerTarget:
             self.schedules = []
 
 
-class BackupSchedule:
+class BackupSchedule(Serializable):
     def __init__(self, dat):
+        Serializable.__init__(self)
         self.name = dat["name"]
         if dat["name"] == "daily":
             self.schedule = "0 2 * * *"
@@ -59,8 +75,9 @@ class BackupSchedule:
             self.retention_days = None
 
 
-class PrivateerConfig:
+class PrivateerConfig(Serializable):
     def __init__(self, path):
+        Serializable.__init__(self)
         with open(f"{path}/privateer.json") as f:
             config = json.load(f)
         self.targets = [PrivateerTarget(t) for t in config["targets"]]
