@@ -18,7 +18,9 @@ def restore_local_backup(host: PrivateerHost, target: PrivateerTarget, require_p
         print(msg)
         return False
     else:
-        if not require_prompt or click.confirm(f"About to restore file {path}. Continue?", default=True):
+        if not require_prompt or click.confirm(
+            f"About to restore file {os.path.basename(path)} from {host.name}. Continue?", default=True
+        ):
             untar_volume(target, path)
             print(f"Restored {path} to {target.name}")
             return True
@@ -31,7 +33,9 @@ def restore_remote_backup(
     res = c.run(f"ls -t {host.path}/{target.name}-*.tar.gz | head -1", in_stream=False, pty=True)
     if res.ok:
         file = res.stdout.strip()
-        if not require_prompt or click.confirm(f"About to restore file {file}. Continue?", default=True):
+        if not require_prompt or click.confirm(
+            f"About to restore file {os.path.basename(file)} from {host.name}. Continue?", default=True
+        ):
             c.get(file, f"{local_backup_path}/")
             untar_volume(target, f"{local_backup_path}/{os.path.basename(file)}")
             print(f"Restored {file} to {target.name}")

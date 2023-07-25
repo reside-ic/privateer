@@ -207,7 +207,7 @@ def test_backup_config():
 
     machine = os.uname().nodename
 
-    daily = [f for f in files if "daily" in f][0]
+    daily = next(f for f in files if "daily" in f)
     lines = open(os.path.join(path, daily)).read().split("\n")
     assert lines[0] == 'BACKUP_SOURCES="/backup/orderly_volume"'
     assert lines[1] == f'BACKUP_FILENAME="orderly_volume-daily-{machine}-%Y-%m-%dT%H-%M-%S.tar.gz"'
@@ -215,7 +215,7 @@ def test_backup_config():
     assert lines[3] == 'BACKUP_CRON_EXPRESSION="0 2 * * *"'
     assert lines[4] == 'BACKUP_RETENTION_DAYS="7"'
 
-    monthly = [f for f in files if "monthly" in f][0]
+    monthly = next(f for f in files if "monthly" in f)
     lines = open(os.path.join(path, monthly)).read().split("\n")
     lines = [line for line in lines if line]
     assert lines[0] == 'BACKUP_SOURCES="/backup/orderly_volume"'

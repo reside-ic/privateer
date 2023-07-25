@@ -19,7 +19,7 @@ class PrivateerHost(Serializable):
     def __init__(self, dat):
         Serializable.__init__(self)
         host_type = dat["type"]
-        if host_type != "remote" and host_type != "local":
+        if host_type not in ("remote", "local"):
             msg = "Host type must be 'remote' or 'local'."
             raise Exception(msg)
         self.name = dat["name"]
