@@ -34,7 +34,7 @@ and at least one host. See `./config/privateer.json` for an example. By default 
 but this can be overridden by explicitly including or excluding targets by name. 
 
 ### Manual backups
-Backups can be run manually with `privateer backup`. In this case the backup filename with be of the format:
+Backups can be run manually with `privateer backup`. In this case the backup filename will be of the format:
 
 ```<volume_name>-<machine_name>-%Y-%m-%dT%H-%M-%S.tar.gz``` 
 
