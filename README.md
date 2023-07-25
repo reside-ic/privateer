@@ -38,7 +38,7 @@ Backups can be run manually with `privateer backup`. In this case the backup fil
 
 ```<volume_name>-<machine_name>-%Y-%m-%dT%H-%M-%S.tar.gz``` 
 
-where `machine_name` is the name of the soure machine.
+where `machine_name` is the name of the source machine.
 
 ### Scheduling
 Backups can be scheduled by specifying cron schedules in `privateer.json` and running `privateer schedule`. 
