@@ -42,7 +42,7 @@ def test_parse_args():
         assert b.called
 
     res = cli.main(["--version"])
-    assert res == "0.0.3"
+    assert res == "0.0.4"
 
 
 def test_get_targets():

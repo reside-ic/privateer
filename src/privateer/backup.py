@@ -41,7 +41,7 @@ def backup(host: PrivateerHost, targets: List[PrivateerTarget]):
 
     for t in targets:
         mounts.append(docker.types.Mount(f"/{t.name}", t.name))
-        filename = f"{t.name}-%Y-%m-%dT%H-%M-%S.tar.gz"
+        filename = f"{backup_prefix(t, None)}-%Y-%m-%dT%H-%M-%S.tar.gz"
         with DockerClient() as cl:
             cl.containers.run(
                 OFFEN_IMAGE,
@@ -61,14 +61,23 @@ def generate_backup_config(target: PrivateerTarget, conf_path):
         os.makedirs(conf_path)
     for s in target.schedules:
         filename = f"{conf_path}/{target.name}-{s.name}.conf"
+        prefix = backup_prefix(target, s)
         with open(filename, "w") as f:
             f.write(f'BACKUP_SOURCES="/backup/{target.name}"\n')
-            f.write(f'BACKUP_FILENAME="{target.name}-{s.name}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
-            f.write(f'BACKUP_PRUNING_PREFIX="{target.name}-{s.name}-"\n')
+            f.write(f'BACKUP_FILENAME="{prefix}-%Y-%m-%dT%H-%M-%S.tar.gz"\n')
+            f.write(f'BACKUP_PRUNING_PREFIX="{prefix}-"\n')
             f.write(f'BACKUP_CRON_EXPRESSION="{s.schedule}"\n')
             if s.retention_days is not None:
                 f.write(f'BACKUP_RETENTION_DAYS="{s.retention_days}"\n')
     return True
+
+
+def backup_prefix(t, s):
+    machine_name = os.uname().nodename
+    if s is not None:
+        return f"{t.name}-{s.name}-{machine_name}"
+    else:
+        return f"{t.name}-{machine_name}"
 
 
 def schedule_backups(host: PrivateerHost, targets: List[PrivateerTarget]):
