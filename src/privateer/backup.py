@@ -1,6 +1,6 @@
 import docker
-from privateer2.check import check
-from privateer2.util import match_value, mounts_str, run_container_with_command
+from privateer.check import check
+from privateer.util import match_value, mounts_str, run_container_with_command
 
 
 def backup_command(name, volume, server):

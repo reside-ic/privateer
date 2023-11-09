@@ -1,7 +1,7 @@
 import docker
-from privateer2.check import check
-from privateer2.service import service_start, service_status, service_stop
-from privateer2.util import unique
+from privateer.check import check
+from privateer.service import service_start, service_status, service_stop
+from privateer.util import unique
 
 
 def schedule_start(cfg, name, *, dry_run=False):

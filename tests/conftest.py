@@ -1,7 +1,7 @@
 import pytest
 import vault_dev
 
-from privateer2.util import (
+from privateer.util import (
     container_if_exists,
     match_value,
     rand_str,

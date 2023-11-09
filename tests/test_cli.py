@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
-import privateer2.cli
-from privateer2.cli import (
+import privateer.cli
+from privateer.cli import (
     Call,
     _do_configure,
     _find_identity,
@@ -15,8 +15,8 @@ from privateer2.cli import (
     main,
     pull,
 )
-from privateer2.config import read_config
-from privateer2.util import transient_working_directory
+from privateer.config import read_config
+from privateer.util import transient_working_directory
 
 
 def test_can_create_and_run_call():
@@ -29,13 +29,13 @@ def test_can_create_and_run_call():
 
 def test_can_parse_version():
     res = _parse_argv(["--version"])
-    assert res.target == privateer2.cli._show_version
+    assert res.target == privateer.cli._show_version
     assert res.kwargs == {}
 
 
 def test_can_parse_import():
     res = _parse_argv(["import", "--dry-run", "f", "v"])
-    assert res.target == privateer2.cli.import_tar
+    assert res.target == privateer.cli.import_tar
     assert res.kwargs == {"volume": "v", "tarfile": "f", "dry_run": True}
     assert not _parse_argv(["import", "f", "v"]).kwargs["dry_run"]
     with pytest.raises(Exception, match="Don't use '--path' with 'import'"):
@@ -46,13 +46,13 @@ def test_can_parse_import():
 
 def test_can_parse_keygen_all():
     res = _parse_argv(["keygen", "--path=example/simple.json", "--all"])
-    assert res.target == privateer2.cli.keygen_all
+    assert res.target == privateer.cli.keygen_all
     assert res.kwargs == {"cfg": read_config("example/simple.json")}
 
 
 def test_can_parse_keygen_one():
     res = _parse_argv(["keygen", "--path=example/simple.json", "alice"])
-    assert res.target == privateer2.cli.keygen
+    assert res.target == privateer.cli.keygen
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -66,7 +66,7 @@ def test_can_prevent_use_of_as_with_keygen():
 
 def test_can_parse_configure():
     res = _parse_argv(["configure", "--path=example/simple.json", "alice"])
-    assert res.target == privateer2.cli._do_configure
+    assert res.target == privateer.cli._do_configure
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -78,7 +78,7 @@ def test_can_parse_configure_without_explicit_path(tmp_path):
     shutil.copy("example/simple.json", tmp_path / "privateer.json")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["configure", "alice"])
-    assert res.target == privateer2.cli._do_configure
+    assert res.target == privateer.cli._do_configure
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -88,7 +88,7 @@ def test_can_parse_configure_without_explicit_path(tmp_path):
 
 def test_can_parse_pull():
     res = _parse_argv(["pull", "--path=example/simple.json"])
-    assert res.target == privateer2.cli.pull
+    assert res.target == privateer.cli.pull
     assert res.kwargs == {"cfg": read_config("example/simple.json")}
 
 
@@ -98,7 +98,7 @@ def test_can_parse_check(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["check"])
-    assert res.target == privateer2.cli.check
+    assert res.target == privateer.cli.check
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -123,7 +123,7 @@ def test_can_parse_server_start(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["server", "start"])
-    assert res.target == privateer2.cli.server_start
+    assert res.target == privateer.cli.server_start
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -137,7 +137,7 @@ def test_can_parse_server_status(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["server", "status"])
-    assert res.target == privateer2.cli.server_status
+    assert res.target == privateer.cli.server_status
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -150,7 +150,7 @@ def test_can_parse_server_stop(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["server", "stop"])
-    assert res.target == privateer2.cli.server_stop
+    assert res.target == privateer.cli.server_stop
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -163,7 +163,7 @@ def test_can_parse_backup(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["backup", "v"])
-    assert res.target == privateer2.cli.backup
+    assert res.target == privateer.cli.backup
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -179,7 +179,7 @@ def test_can_parse_backup_with_server(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["backup", "v", "--server", "alice"])
-    assert res.target == privateer2.cli.backup
+    assert res.target == privateer.cli.backup
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -195,7 +195,7 @@ def test_can_parse_restore(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["restore", "v"])
-    assert res.target == privateer2.cli.restore
+    assert res.target == privateer.cli.restore
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -212,7 +212,7 @@ def test_can_parse_complex_restore(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["restore", "v", "--server=alice", "--source=bob"])
-    assert res.target == privateer2.cli.restore
+    assert res.target == privateer.cli.restore
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -229,7 +229,7 @@ def test_can_parse_export(tmp_path):
         f.write("alice\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["export", "v"])
-    assert res.target == privateer2.cli.export_tar
+    assert res.target == privateer.cli.export_tar
     assert res.kwargs == {
         "cfg": read_config("example/simple.json"),
         "name": "alice",
@@ -242,7 +242,7 @@ def test_can_parse_export(tmp_path):
 
 def test_can_parse_local_export():
     res = _parse_argv(["export", "v", "--source=local"])
-    assert res.target == privateer2.cli.export_tar_local
+    assert res.target == privateer.cli.export_tar_local
     assert res.kwargs == {
         "volume": "v",
         "to_dir": None,
@@ -270,7 +270,7 @@ def test_configuration_writes_identity(tmp_path, monkeypatch):
     shutil.copy("example/simple.json", tmp_path / "privateer.json")
     cfg = read_config("example/simple.json")
     mock_configure = MagicMock()
-    monkeypatch.setattr(privateer2.cli, "configure", mock_configure)
+    monkeypatch.setattr(privateer.cli, "configure", mock_configure)
     _do_configure(cfg, "alice", str(tmp_path))
     assert tmp_path.joinpath(".privateer_identity").exists()
     assert _find_identity(None, str(tmp_path)) == "alice"
@@ -280,7 +280,7 @@ def test_configuration_writes_identity(tmp_path, monkeypatch):
 def test_can_print_version(capsys):
     _show_version()
     out = capsys.readouterr()
-    assert out.out == f"privateer {privateer2.cli.about.__version__}\n"
+    assert out.out == f"privateer {privateer.cli.about.__version__}\n"
 
 
 def test_options_parsing_else_clause(tmp_path):
@@ -298,7 +298,7 @@ def test_options_parsing_else_clause(tmp_path):
 
 def test_call_main(monkeypatch):
     mock_call = MagicMock()
-    monkeypatch.setattr(privateer2.cli, "_parse_argv", mock_call)
+    monkeypatch.setattr(privateer.cli, "_parse_argv", mock_call)
     main(["--version"])
     assert mock_call.call_count == 1
     assert mock_call.call_args == call(["--version"])
@@ -311,7 +311,7 @@ def test_run_pull(monkeypatch):
     image_client = f"mrcide/privateer-client:{cfg.tag}"
     image_server = f"mrcide/privateer-server:{cfg.tag}"
     mock_docker = MagicMock()
-    monkeypatch.setattr(privateer2.cli, "docker", mock_docker)
+    monkeypatch.setattr(privateer.cli, "docker", mock_docker)
     pull(cfg)
     assert mock_docker.from_env.call_count == 1
     client = mock_docker.from_env.return_value
@@ -343,7 +343,7 @@ def test_can_parse_schedule_start(tmp_path):
         f.write("bob\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["schedule", "start"])
-    assert res.target == privateer2.cli.schedule_start
+    assert res.target == privateer.cli.schedule_start
     assert res.kwargs == {
         "cfg": read_config("example/schedule.json"),
         "name": "bob",
@@ -357,7 +357,7 @@ def test_can_parse_schedule_status(tmp_path):
         f.write("bob\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["schedule", "status"])
-    assert res.target == privateer2.cli.schedule_status
+    assert res.target == privateer.cli.schedule_status
     assert res.kwargs == {
         "cfg": read_config("example/schedule.json"),
         "name": "bob",
@@ -370,7 +370,7 @@ def test_can_parse_schedule_stop(tmp_path):
         f.write("bob\n")
     with transient_working_directory(tmp_path):
         res = _parse_argv(["schedule", "stop"])
-    assert res.target == privateer2.cli.schedule_stop
+    assert res.target == privateer.cli.schedule_stop
     assert res.kwargs == {
         "cfg": read_config("example/schedule.json"),
         "name": "bob",

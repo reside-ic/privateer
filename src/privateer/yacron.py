@@ -3,9 +3,9 @@ import tempfile
 
 import yacron.config
 
-from privateer2.backup import backup_command
-from privateer2.config import Client
-from privateer2.util import current_timezone_name
+from privateer.backup import backup_command
+from privateer.config import Client
+from privateer.util import current_timezone_name
 
 
 def generate_yacron_yaml(cfg, name):

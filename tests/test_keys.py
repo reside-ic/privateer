@@ -1,7 +1,7 @@
 import vault_dev
 
-from privateer2.config import read_config
-from privateer2.keys import keygen, keygen_all, keys_data
+from privateer.config import read_config
+from privateer.keys import keygen, keygen_all, keys_data
 
 
 def test_can_create_keys():

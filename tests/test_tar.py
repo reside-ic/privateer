@@ -6,17 +6,17 @@ import pytest
 import vault_dev
 
 import docker
-import privateer2.tar
-import privateer2.util
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
-from privateer2.tar import export_tar, export_tar_local, import_tar
+import privateer.tar
+import privateer.util
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
+from privateer.tar import export_tar, export_tar_local, import_tar
 
 
 def test_can_print_instructions_for_exporting_local_vol(managed_docker, capsys):
     vol = managed_docker("volume")
-    privateer2.util.string_to_volume("hello", vol, "test")
+    privateer.util.string_to_volume("hello", vol, "test")
     path = export_tar_local(vol, dry_run=True)
     out = capsys.readouterr()
     lines = out.out.strip().split("\n")
@@ -32,7 +32,7 @@ def test_can_print_instructions_for_exporting_local_vol(managed_docker, capsys):
 
 def test_can_export_local_volume(tmp_path, managed_docker):
     vol = managed_docker("volume")
-    privateer2.util.string_to_volume("hello", vol, "test")
+    privateer.util.string_to_volume("hello", vol, "test")
     path = export_tar_local(vol, to_dir=tmp_path)
     assert len(os.listdir(tmp_path)) == 1
     assert os.listdir(tmp_path)[0] == os.path.basename(path)
@@ -69,7 +69,7 @@ def test_can_print_instructions_for_export_volume(managed_docker, capsys):
 
 def test_can_export_managed_volume(monkeypatch, managed_docker):
     mock_tar_create = MagicMock()
-    monkeypatch.setattr(privateer2.tar, "_run_tar_create", mock_tar_create)
+    monkeypatch.setattr(privateer.tar, "_run_tar_create", mock_tar_create)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
@@ -96,8 +96,8 @@ def test_can_export_managed_volume(monkeypatch, managed_docker):
 def test_can_export_local_managed_volume(monkeypatch, managed_docker):
     mock_tar_local = MagicMock()
     mock_tar_create = MagicMock()
-    monkeypatch.setattr(privateer2.tar, "_run_tar_create", mock_tar_create)
-    monkeypatch.setattr(privateer2.tar, "export_tar_local", mock_tar_local)
+    monkeypatch.setattr(privateer.tar, "_run_tar_create", mock_tar_create)
+    monkeypatch.setattr(privateer.tar, "export_tar_local", mock_tar_local)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
@@ -144,16 +144,16 @@ def test_throw_if_volume_does_not_exist(managed_docker):
 def test_import_volume(managed_docker, tmp_path):
     src = managed_docker("volume")
     dest = managed_docker("volume")
-    privateer2.util.string_to_volume("hello", src, "test")
+    privateer.util.string_to_volume("hello", src, "test")
     path = export_tar_local(src, to_dir=tmp_path)
     import_tar(dest, path)
-    assert privateer2.util.string_from_volume(dest, "test") == "hello"
+    assert privateer.util.string_from_volume(dest, "test") == "hello"
 
 
 def test_instructions_to_import_volume(managed_docker, tmp_path, capsys):
     src = managed_docker("volume")
     dest = managed_docker("volume")
-    privateer2.util.string_to_volume("hello", src, "test")
+    privateer.util.string_to_volume("hello", src, "test")
     path = export_tar_local(src, to_dir=tmp_path)
     capsys.readouterr()
     import_tar(dest, path, dry_run=True)

@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from privateer2.util import match_value
-from privateer2.vault import vault_client
+from privateer.util import match_value
+from privateer.vault import vault_client
 
 
 def read_config(path):

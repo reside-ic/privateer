@@ -2,12 +2,12 @@ import pytest
 import vault_dev
 
 import docker
-from privateer2.check import check
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
-from privateer2.util import string_from_volume
-from privateer2.yacron import generate_yacron_yaml
+from privateer.check import check
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
+from privateer.util import string_from_volume
+from privateer.yacron import generate_yacron_yaml
 
 
 def test_can_unpack_keys_for_server(managed_docker):

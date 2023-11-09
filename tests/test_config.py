@@ -1,7 +1,7 @@
 import pytest
 import vault_dev
 
-from privateer2.config import _check_config, find_source, read_config
+from privateer.config import _check_config, find_source, read_config
 
 
 def test_can_read_config():

@@ -1,9 +1,9 @@
 import os
 
 import docker
-from privateer2.check import check
-from privateer2.config import find_source
-from privateer2.util import (
+from privateer.check import check
+from privateer.config import find_source
+from privateer.util import (
     isotimestamp,
     mounts_str,
     run_container_with_command,

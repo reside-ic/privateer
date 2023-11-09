@@ -4,11 +4,11 @@ import pytest
 import vault_dev
 
 import docker
-import privateer2.check
-from privateer2.check import _check_connections, check
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
+import privateer.check
+from privateer.check import _check_connections, check
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
 
 
 def test_can_check_quietly(capsys, managed_docker):
@@ -48,7 +48,7 @@ def test_error_on_check_if_unknown_machine():
 
 def test_can_check_connections(capsys, monkeypatch, managed_docker):
     mock_docker = MagicMock()
-    monkeypatch.setattr(privateer2.check, "docker", mock_docker)
+    monkeypatch.setattr(privateer.check, "docker", mock_docker)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
@@ -84,7 +84,7 @@ def test_can_report_connection_failure(capsys, monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_docker.errors = docker.errors
     err = docker.errors.ContainerError("nm", 1, "ssh", "img", b"the reason")
-    monkeypatch.setattr(privateer2.check, "docker", mock_docker)
+    monkeypatch.setattr(privateer.check, "docker", mock_docker)
     client = mock_docker.from_env.return_value
     client.containers.run.side_effect = err
     with vault_dev.Server(export_token=True) as server:
@@ -121,7 +121,7 @@ def test_can_report_connection_failure(capsys, monkeypatch, managed_docker):
 
 def test_only_test_connection_for_clients(monkeypatch, managed_docker):
     mock_check = MagicMock()
-    monkeypatch.setattr(privateer2.check, "_check_connections", mock_check)
+    monkeypatch.setattr(privateer.check, "_check_connections", mock_check)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()

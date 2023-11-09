@@ -1,15 +1,15 @@
 """Usage:
-  privateer2 --version
-  privateer2 [options] pull
-  privateer2 [options] keygen (<name> | --all)
-  privateer2 [options] configure <name>
-  privateer2 [options] check [--connection]
-  privateer2 [options] backup <volume> [--server=NAME]
-  privateer2 [options] restore <volume> [--server=NAME] [--source=NAME]
-  privateer2 [options] export <volume> [--to-dir=PATH] [--source=NAME]
-  privateer2 [options] import <tarfile> <volume>
-  privateer2 [options] server (start | stop | status)
-  privateer2 [options] schedule (start | stop | status)
+  privateer --version
+  privateer [options] pull
+  privateer [options] keygen (<name> | --all)
+  privateer [options] configure <name>
+  privateer [options] check [--connection]
+  privateer [options] backup <volume> [--server=NAME]
+  privateer [options] restore <volume> [--server=NAME] [--source=NAME]
+  privateer [options] export <volume> [--to-dir=PATH] [--source=NAME]
+  privateer [options] import <tarfile> <volume>
+  privateer [options] server (start | stop | status)
+  privateer [options] schedule (start | stop | status)
 
 Options:
   --path=PATH  The path to the configuration, or directory with privateer.json
@@ -39,16 +39,16 @@ import os
 import docopt
 
 import docker
-import privateer2.__about__ as about
-from privateer2.backup import backup
-from privateer2.check import check
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen, keygen_all
-from privateer2.restore import restore
-from privateer2.schedule import schedule_start, schedule_status, schedule_stop
-from privateer2.server import server_start, server_status, server_stop
-from privateer2.tar import export_tar, export_tar_local, import_tar
+import privateer.__about__ as about
+from privateer.backup import backup
+from privateer.check import check
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen, keygen_all
+from privateer.restore import restore
+from privateer.schedule import schedule_start, schedule_status, schedule_stop
+from privateer.server import server_start, server_status, server_stop
+from privateer.tar import export_tar, export_tar_local, import_tar
 
 
 def pull(cfg):

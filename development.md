@@ -31,38 +31,38 @@ sed "s/alice.example.com/$(hostname)/" example/local.json > tmp/privateer.json
 Create a set of keys
 
 ```
-privateer2 --path tmp keygen --all
+privateer --path tmp keygen --all
 ```
 
 You could also do this individually like
 
 ```
-privateer2 --path tmp keygen alice
+privateer --path tmp keygen alice
 ```
 
 Set up the key volumes
 
 ```
-privateer2 --path tmp configure alice
-privateer2 --path tmp configure bob
+privateer --path tmp configure alice
+privateer --path tmp configure bob
 ```
 
-Start the server, as a background process (note that if these were on different machine the `privateer2 configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
+Start the server, as a background process (note that if these were on different machine the `privateer configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
 
 ```
-privateer2 --path tmp --as=alice server start
+privateer --path tmp --as=alice server start
 ```
 
 Once `alice` is running, we can test this connection from `bob`:
 
 ```
-privateer2 --path tmp --as=bob check --connection
+privateer --path tmp --as=bob check --connection
 ```
 
 This command would be simpler to run if we are in the `tmp` directory, which would be the usual situation in a multi-machine setup
 
 ```
-privateer2 check --connection
+privateer check --connection
 ```
 
 For all other commands below, you can drop the `--path` and `--as` arguments if you change directory.
@@ -77,13 +77,13 @@ docker run -it --rm -v data:/data ubuntu bash -c "base64 /dev/urandom | head -c 
 We can now backup from `bob` to `alice` as:
 
 ```
-privateer2 --path tmp --as=bob backup data
+privateer --path tmp --as=bob backup data
 ```
 
 or see what commands you would need in order to try this yourself:
 
 ```
-privateer2 --path tmp --as=bob backup data --dry-run
+privateer --path tmp --as=bob backup data --dry-run
 ```
 
 Delete the volume
@@ -95,19 +95,19 @@ docker volume rm data
 We can now restore it:
 
 ```
-privateer2 --path tmp --as=bob restore data
+privateer --path tmp --as=bob restore data
 ```
 
 or see the commands to do this ourselves:
 
 ```
-privateer2 --path tmp --as=bob restore data --dry-run
+privateer --path tmp --as=bob restore data --dry-run
 ```
 
 Tear down the server with
 
 ```
-privateer2 --path tmp --as=alice server stop
+privateer --path tmp --as=alice server stop
 ```
 
 ## Writing tests

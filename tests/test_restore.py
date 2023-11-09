@@ -3,12 +3,12 @@ from unittest.mock import MagicMock, call
 import vault_dev
 
 import docker
-import privateer2.config
-import privateer2.restore
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
-from privateer2.restore import restore
+import privateer.config
+import privateer.restore
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
+from privateer.restore import restore
 
 
 def test_can_print_instructions_to_run_restore(capsys, managed_docker):
@@ -37,7 +37,7 @@ def test_can_print_instructions_to_run_restore(capsys, managed_docker):
 def test_can_run_restore(monkeypatch, managed_docker):
     mock_run = MagicMock()
     monkeypatch.setattr(
-        privateer2.restore, "run_container_with_command", mock_run
+        privateer.restore, "run_container_with_command", mock_run
     )
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")

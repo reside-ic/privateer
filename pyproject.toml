@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "privateer2"
+name = "privateer"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
@@ -35,15 +35,15 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/privateer2#readme"
-Issues = "https://github.com/unknown/privateer2/issues"
-Source = "https://github.com/unknown/privateer2"
+Documentation = "https://github.com/reside-ic/privateer#readme"
+Issues = "https://github.com/reside-ic/privateer/issues"
+Source = "https://github.com/reside-ic/privateer"
 
 [project.scripts]
-privateer2 = "privateer2.cli:main"
+privateer = "privateer.cli:main"
 
 [tool.hatch.version]
-path = "src/privateer2/__about__.py"
+path = "src/privateer/__about__.py"
 
 [tool.hatch.envs.default]
 python = "python3"
@@ -83,7 +83,7 @@ dependencies = [
   "ruff>=0.0.243",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/privateer2 tests}"
+typing = "mypy --install-types --non-interactive {args:src/privateer tests}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -153,7 +153,7 @@ unfixable = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["privateer2"]
+known-first-party = ["privateer"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -163,16 +163,16 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-source_pkgs = ["privateer2", "tests"]
+source_pkgs = ["privateer", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/privateer2/__about__.py",
+  "src/privateer/__about__.py",
 ]
 
 [tool.coverage.paths]
-privateer2 = ["src/privateer2", "*/privateer2/src/privateer2"]
-tests = ["tests", "*/privateer2/tests"]
+privateer = ["src/privateer", "*/privateer/src/privateer"]
+tests = ["tests", "*/privateer/tests"]
 
 [tool.coverage.report]
 exclude_lines = [

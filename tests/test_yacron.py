@@ -1,9 +1,9 @@
 import pytest
 
-from privateer2.backup import backup_command
-from privateer2.config import read_config
-from privateer2.util import current_timezone_name
-from privateer2.yacron import _validate_yacron_yaml, generate_yacron_yaml
+from privateer.backup import backup_command
+from privateer.config import read_config
+from privateer.util import current_timezone_name
+from privateer.yacron import _validate_yacron_yaml, generate_yacron_yaml
 
 
 def test_can_generate_yacron_yaml():

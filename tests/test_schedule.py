@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, call
 import pytest
 import vault_dev
 
-import privateer2.schedule
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
-from privateer2.schedule import schedule_start, schedule_status, schedule_stop
+import privateer.schedule
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
+from privateer.schedule import schedule_start, schedule_status, schedule_stop
 
 
 def test_can_print_instructions_to_start_schedule(capsys, managed_docker):
@@ -45,8 +45,8 @@ def test_can_print_instructions_to_start_schedule(capsys, managed_docker):
 def test_can_start_schedule(monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_start = MagicMock()
-    monkeypatch.setattr(privateer2.schedule, "docker", mock_docker)
-    monkeypatch.setattr(privateer2.schedule, "service_start", mock_start)
+    monkeypatch.setattr(privateer.schedule, "docker", mock_docker)
+    monkeypatch.setattr(privateer.schedule, "service_start", mock_start)
     with vault_dev.Server(export_token=True) as schedule:
         cfg = read_config("example/schedule.json")
         cfg.vault.url = schedule.url()
@@ -109,8 +109,8 @@ def test_can_stop_schedule(monkeypatch):
     mock_check = MagicMock()
     mock_stop = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer2.schedule, "check", mock_check)
-    monkeypatch.setattr(privateer2.schedule, "service_stop", mock_stop)
+    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "service_stop", mock_stop)
     schedule_stop(cfg, "bob")
     assert mock_check.call_count == 1
     assert mock_check.call_args == call(cfg, "bob", quiet=True)
@@ -123,8 +123,8 @@ def test_can_get_schedule_status(monkeypatch):
     mock_check = MagicMock()
     mock_status = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer2.schedule, "check", mock_check)
-    monkeypatch.setattr(privateer2.schedule, "service_status", mock_status)
+    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "service_status", mock_status)
     schedule_status(cfg, "bob")
     assert mock_check.call_count == 1
     assert mock_check.call_args == call(cfg, "bob", quiet=False)

@@ -1,7 +1,7 @@
 import docker
-from privateer2.keys import keys_data
-from privateer2.util import string_to_volume
-from privateer2.yacron import generate_yacron_yaml
+from privateer.keys import keys_data
+from privateer.util import string_to_volume
+from privateer.yacron import generate_yacron_yaml
 
 
 def configure(cfg, name):

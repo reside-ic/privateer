@@ -1,5 +1,5 @@
 import docker
-from privateer2.util import string_from_volume
+from privateer.util import string_from_volume
 
 
 def check(cfg, name, *, connection=False, quiet=False):

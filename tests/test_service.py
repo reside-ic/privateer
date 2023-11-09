@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, Mock, call
 import pytest
 
 import docker
-import privateer2.service
-from privateer2.service import (
+import privateer.service
+from privateer.service import (
     service_command,
     service_start,
     service_status,
@@ -45,9 +45,9 @@ def test_can_launch_container(monkeypatch):
     mounts = Mock()
     ports = Mock()
     command = Mock()
-    monkeypatch.setattr(privateer2.service, "docker", mock_docker)
-    monkeypatch.setattr(privateer2.service, "container_exists", mock_exists)
-    monkeypatch.setattr(privateer2.service, "ensure_image", mock_ensure_image)
+    monkeypatch.setattr(privateer.service, "docker", mock_docker)
+    monkeypatch.setattr(privateer.service, "container_exists", mock_exists)
+    monkeypatch.setattr(privateer.service, "ensure_image", mock_ensure_image)
     service_start(
         "alice", "nm", "img", mounts=mounts, ports=ports, command=command
     )
@@ -71,7 +71,7 @@ def test_can_launch_container(monkeypatch):
 def test_throws_if_container_already_exists(monkeypatch):
     mock_exists = MagicMock()
     mock_exists.return_value = True
-    monkeypatch.setattr(privateer2.service, "container_exists", mock_exists)
+    monkeypatch.setattr(privateer.service, "container_exists", mock_exists)
     msg = "Container 'nm' for 'alice' already running"
     with pytest.raises(Exception, match=msg):
         service_start("alice", "nm", "img")
@@ -82,7 +82,7 @@ def test_throws_if_container_already_exists(monkeypatch):
 def test_returns_cmd_even_if_container_already_exists(capsys, monkeypatch):
     mock_exists = MagicMock()
     mock_exists.return_value = True
-    monkeypatch.setattr(privateer2.service, "container_exists", mock_exists)
+    monkeypatch.setattr(privateer.service, "container_exists", mock_exists)
     service_start("alice", "nm", "img", dry_run=True)
     expected = service_command("img", "nm")
     out = capsys.readouterr().out
@@ -95,7 +95,7 @@ def test_can_stop_service(monkeypatch, capsys):
     mock_container.status = "running"
     mock_container_if_exists = MagicMock(return_value=mock_container)
     monkeypatch.setattr(
-        privateer2.service,
+        privateer.service,
         "container_if_exists",
         mock_container_if_exists,
     )
@@ -127,7 +127,7 @@ def test_can_get_service_status(monkeypatch, capsys):
     mock_container.status = "running"
     mock_container_if_exists = MagicMock(return_value=mock_container)
     monkeypatch.setattr(
-        privateer2.service,
+        privateer.service,
         "container_if_exists",
         mock_container_if_exists,
     )

@@ -1,7 +1,7 @@
 import docker
-from privateer2.check import check
-from privateer2.config import find_source
-from privateer2.util import match_value, mounts_str, run_container_with_command
+from privateer.check import check
+from privateer.config import find_source
+from privateer.util import match_value, mounts_str, run_container_with_command
 
 
 def restore(cfg, name, volume, *, server=None, source=None, dry_run=False):

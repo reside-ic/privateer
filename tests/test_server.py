@@ -2,11 +2,11 @@ from unittest.mock import MagicMock, call
 
 import vault_dev
 
-import privateer2.server
-from privateer2.config import read_config
-from privateer2.configure import configure
-from privateer2.keys import keygen_all
-from privateer2.server import server_start, server_status, server_stop
+import privateer.server
+from privateer.config import read_config
+from privateer.configure import configure
+from privateer.keys import keygen_all
+from privateer.server import server_start, server_status, server_stop
 
 
 def test_can_print_instructions_to_start_server(capsys, managed_docker):
@@ -38,8 +38,8 @@ def test_can_print_instructions_to_start_server(capsys, managed_docker):
 def test_can_start_server(monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_start = MagicMock()
-    monkeypatch.setattr(privateer2.server, "docker", mock_docker)
-    monkeypatch.setattr(privateer2.server, "service_start", mock_start)
+    monkeypatch.setattr(privateer.server, "docker", mock_docker)
+    monkeypatch.setattr(privateer.server, "service_start", mock_start)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
@@ -77,8 +77,8 @@ def test_can_start_server(monkeypatch, managed_docker):
 def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_start = MagicMock()
-    monkeypatch.setattr(privateer2.server, "docker", mock_docker)
-    monkeypatch.setattr(privateer2.server, "service_start", mock_start)
+    monkeypatch.setattr(privateer.server, "docker", mock_docker)
+    monkeypatch.setattr(privateer.server, "service_start", mock_start)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
@@ -125,8 +125,8 @@ def test_can_stop_server(monkeypatch):
     mock_check = MagicMock()
     mock_stop = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer2.server, "check", mock_check)
-    monkeypatch.setattr(privateer2.server, "service_stop", mock_stop)
+    monkeypatch.setattr(privateer.server, "check", mock_check)
+    monkeypatch.setattr(privateer.server, "service_stop", mock_stop)
     server_stop(cfg, "alice")
     assert mock_check.call_count == 1
     assert mock_check.call_args == call(cfg, "alice", quiet=True)
@@ -139,8 +139,8 @@ def test_can_get_server_status(monkeypatch):
     mock_check = MagicMock()
     mock_status = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer2.server, "check", mock_check)
-    monkeypatch.setattr(privateer2.server, "service_status", mock_status)
+    monkeypatch.setattr(privateer.server, "check", mock_check)
+    monkeypatch.setattr(privateer.server, "service_status", mock_status)
     server_status(cfg, "alice")
     assert mock_check.call_count == 1
     assert mock_check.call_args == call(cfg, "alice", quiet=False)

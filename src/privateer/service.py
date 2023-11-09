@@ -1,5 +1,5 @@
 import docker
-from privateer2.util import (
+from privateer.util import (
     container_exists,
     container_if_exists,
     ensure_image,

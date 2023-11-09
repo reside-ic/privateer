@@ -1,6 +1,6 @@
 import re
 
-from privateer2.__about__ import __version__ as privateer_version
+from privateer.__about__ import __version__ as privateer_version
 
 
 def test_version_has_required_format():
