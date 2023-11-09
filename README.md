@@ -100,7 +100,7 @@ privateer2 export <volume> [--to-dir=PATH] [--source=NAME]
 
 which will bring up a new container and create the tar file within the directory `PATH`. The name will be automatically generated and include the curent time, volume name and source.  The `source` argument controls who backed the volume up in the first place, in the case where there are multiple clients.  It can be omitted in the case where there is only one client performing backups, and **must** be ommitted in the case where you are exporting a local volume.
 
-You can point this command at any volume on any system where `privateer2` is installed to make a `tar` file; this might be useful for ad-hoc backup and recovery. If you have a volume called `redis_data`, then 
+You can point this command at any volume on any system where `privateer2` is installed to make a `tar` file; this might be useful for ad-hoc backup and recovery. If you have a volume called `redis_data`, then
 
 ```
 privateer2 export redis_data
