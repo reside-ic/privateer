@@ -1,0 +1,24 @@
+# -*-sh-*-
+DOCKER_ROOT=$(realpath $HERE/..)
+PACKAGE_ORG=mrcide
+CLIENT_NAME=privateer-client
+SERVER_NAME=privateer-server
+
+# Buildkite doesn't check out a full history from the remote (just the
+# single commit) so you end up with a detached head and git rev-parse
+# doesn't work
+if [ false && "$BUILDKITE" = "true" ]; then
+    GIT_SHA=${BUILDKITE_COMMIT:0:7}
+    GIT_BRANCH=$BUILDKITE_BRANCH
+else
+    GIT_SHA=$(git -C "$DOCKER_ROOT" rev-parse --short=7 HEAD)
+    GIT_BRANCH=$(git -C "$DOCKER_ROOT" symbolic-ref --short HEAD)
+fi
+
+TAG_CLIENT_SHA="${PACKAGE_ORG}/${CLIENT_NAME}:${GIT_SHA}"
+TAG_CLIENT_BRANCH="${PACKAGE_ORG}/${CLIENT_NAME}:${GIT_BRANCH}"
+TAG_CLIENT_LATEST="${PACKAGE_ORG}/${CLIENT_NAME}:latest"
+
+TAG_SERVER_SHA="${PACKAGE_ORG}/${SERVER_NAME}:${GIT_SHA}"
+TAG_SERVER_BRANCH="${PACKAGE_ORG}/${SERVER_NAME}:${GIT_BRANCH}"
+TAG_SERVER_LATEST="${PACKAGE_ORG}/${SERVER_NAME}:latest"

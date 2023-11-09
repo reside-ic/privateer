@@ -1,0 +1,28 @@
+Include /etc/ssh/sshd_config.d/*.conf
+
+PermitRootLogin prohibit-password
+#StrictModes yes
+#MaxAuthTries 1
+#MaxSessions 10
+
+PubkeyAuthentication yes
+
+AuthorizedKeysFile	/privateer/keys/authorized_keys
+HostKey /privateer/keys/id_rsa
+
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
+
+#AllowAgentForwarding yes
+#AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding no
+# PermitTTY no
+PrintMotd no
+
+# Allow client to pass locale environment variables
+AcceptEnv LANG LC_*
+
+# override default of no subsystems
+# Subsystem	sftp	/usr/lib/openssh/sftp-server
