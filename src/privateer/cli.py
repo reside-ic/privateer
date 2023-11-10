@@ -34,7 +34,7 @@ Commentary:
   run forever (with the 'start' option). Check in on them with
   'status' or stop them with 'stop'.
 
-  The repliacte command moves data from one server to another, use
+  The replicate command moves data from one server to another, use
   with care.
 """
 
