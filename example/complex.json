@@ -10,7 +10,7 @@
         },
         {
             "name": "carol",
-            "hostname": "alice.example.com",
+            "hostname": "carol.example.com",
             "port": 10022,
             "key_volume": "privateer_keys",
             "data_volume": "privateer_data",

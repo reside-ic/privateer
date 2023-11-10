@@ -69,6 +69,9 @@ class Config(BaseModel):
     def list_clients(self):
         return [x.name for x in self.clients]
 
+    def list_machines(self):
+        return [x.name for x in self.clients + self.servers]
+
     def list_volumes(self):
         return [x.name for x in self.volumes]
 

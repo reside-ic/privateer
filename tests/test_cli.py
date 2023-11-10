@@ -375,3 +375,20 @@ def test_can_parse_schedule_stop(tmp_path):
         "cfg": read_config("example/schedule.json"),
         "name": "bob",
     }
+
+
+def test_can_parse_replicate(tmp_path):
+    shutil.copy("example/complex.json", tmp_path / "privateer.json")
+    with open(tmp_path / ".privateer_identity", "w") as f:
+        f.write("alice\n")
+    with transient_working_directory(tmp_path):
+        res = _parse_argv(["replicate", "other", "--to", "carol"])
+    assert res.target == privateer.cli.replicate
+    assert res.kwargs == {
+        "cfg": read_config("example/complex.json"),
+        "name": "alice",
+        "volume": "other",
+        "to": "carol",
+        "source": None,
+        "dry_run": False,
+    }

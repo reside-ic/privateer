@@ -23,18 +23,21 @@ def keys_data(cfg, name):
         "config": None,
     }
     if name in cfg.list_servers():
-        keys = _get_pubkeys(vault, cfg.vault.prefix, cfg.list_clients())
+        nms_clients = [x for x in cfg.list_machines() if x is not name]
+        keys = _get_pubkeys(vault, cfg.vault.prefix, nms_clients)
         ret["authorized_keys"] = "".join([f"{v}\n" for v in keys.values()])
-    if name in cfg.list_clients():
-        keys = _get_pubkeys(vault, cfg.vault.prefix, cfg.list_servers())
+    nms_servers = [x for x in cfg.list_servers() if x != name]
+    if nms_servers:
+        keys = _get_pubkeys(vault, cfg.vault.prefix, nms_servers)
         known_hosts = []
         config = []
         for s in cfg.servers:
-            known_hosts.append(f"[{s.hostname}]:{s.port} {keys[s.name]}\n")
-            config.append(f"Host {s.name}\n")
-            config.append("  User root\n")
-            config.append(f"  Port {s.port}\n")
-            config.append(f"  HostName {s.hostname}\n")
+            if s.name != name:
+                known_hosts.append(f"[{s.hostname}]:{s.port} {keys[s.name]}\n")
+                config.append(f"Host {s.name}\n")
+                config.append("  User root\n")
+                config.append(f"  Port {s.port}\n")
+                config.append(f"  HostName {s.hostname}\n")
         ret["known_hosts"] = "".join(known_hosts)
         ret["config"] = "".join(config)
     return ret

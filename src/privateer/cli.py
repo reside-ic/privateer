@@ -10,6 +10,7 @@
   privateer [options] import <tarfile> <volume>
   privateer [options] server (start | stop | status)
   privateer [options] schedule (start | stop | status)
+  privateer [options] replicate <volume> --to=NAME [--source=NAME]
 
 Options:
   --path=PATH  The path to the configuration, or directory with privateer.json
@@ -32,6 +33,9 @@ Commentary:
   The server and schedule commands start background containers that
   run forever (with the 'start' option). Check in on them with
   'status' or stop them with 'stop'.
+
+  The repliacte command moves data from one server to another, use
+  with care.
 """
 
 import os
@@ -45,6 +49,7 @@ from privateer.check import check
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen, keygen_all
+from privateer.replicate import replicate
 from privateer.restore import restore
 from privateer.schedule import schedule_start, schedule_status, schedule_stop
 from privateer.server import server_start, server_status, server_stop
@@ -212,6 +217,16 @@ def _parse_opts(opts):
                 return Call(schedule_stop, cfg=cfg, name=name)
             else:
                 return Call(schedule_status, cfg=cfg, name=name)
+        elif opts["replicate"]:
+            return Call(
+                replicate,
+                cfg=cfg,
+                name=name,
+                volume=opts["<volume>"],
+                to=opts["--to"],
+                source=opts["--source"],
+                dry_run=dry_run,
+            )
         else:
             msg = "Invalid cli call -- privateer bug"
             raise Exception(msg)
