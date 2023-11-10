@@ -6,7 +6,7 @@ from privateer.util import mounts_str, run_container_with_command
 
 def replicate(cfg, name, volume, to, *, source=None, dry_run=True):
     machine = check(cfg, name, quiet=True)
-    if machine not in cfg.list_servers():
+    if name not in cfg.list_servers():
         msg = f"Can only replicate from servers, but '{name}' is a client"
         raise Exception(msg)
     if to not in cfg.list_servers():
