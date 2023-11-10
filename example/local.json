@@ -1,0 +1,32 @@
+{
+    "servers": [
+        {
+            "name": "alice",
+            "hostname": "alice.example.com",
+            "port": 10022,
+            "key_volume": "privateer_keys_alice",
+            "data_volume": "privateer_data_alice",
+            "container": "privateer_server"
+        }
+    ],
+    "clients": [
+        {
+            "name": "bob",
+            "backup": ["data"],
+            "key_volume": "privateer_keys_bob"
+        }
+    ],
+    "volumes": [
+        {
+            "name": "data"
+        },
+        {
+            "name": "other",
+            "local": true
+        }
+    ],
+    "vault": {
+        "url": "http://localhost:8200",
+        "prefix": "/secret/privateer"
+    }
+}

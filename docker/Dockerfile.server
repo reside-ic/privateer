@@ -1,0 +1,17 @@
+FROM ubuntu
+
+RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+        openssh-client \
+        openssh-server \
+        rsync && \
+        mkdir -p /var/run/sshd && \
+        mkdir -p /root/.ssh
+
+COPY sshd_config /etc/ssh/sshd_config
+
+VOLUME /privateer/keys
+VOLUME /privateer/volumes
+EXPOSE 22
+
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-E", "/dev/stderr"]

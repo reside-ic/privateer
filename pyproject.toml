@@ -5,30 +5,32 @@ build-backend = "hatchling.build"
 [project]
 name = "privateer"
 dynamic = ["version"]
-description = 'Tool to backup docker volumes'
+description = "Tool to back up docker volumes onto remote machines"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = "MIT"
 keywords = []
 authors = [
-    { name = "Alex", email = "alex.hill@gmail.com" },
+  { name = "Rich FitzJohn", email = "r.fitzjohn@imperial.ac.uk" },
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-    "click",
+    "cryptography>=3.1",
     "docker",
     "docopt",
-    "fabric"
+    "hvac",
+    "pydantic",
+    "tzlocal",
+    "yacron"
 ]
 
 [project.urls]
@@ -43,106 +45,110 @@ privateer = "privateer.cli:main"
 path = "src/privateer/__about__.py"
 
 [tool.hatch.envs.default]
+python = "python3"
 dependencies = [
-    "coverage[toml]>=6.5",
-    "pytest",
+  "coverage[toml]>=6.5",
+  "pytest",
+  "vault-dev>=0.1.1"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
-    "- coverage combine",
-    "coverage report",
-]
-cov-report-xml = [
-    "- coverage combine",
-    "coverage xml",
+  "- coverage combine",
+  "coverage report --show-missing",
 ]
 cov = [
-    "test-cov",
-    "cov-report",
+  "test-cov",
+  "cov-report",
+]
+cov-report-xml = [
+  "- coverage combine",
+  "coverage xml",
 ]
 cov-ci = [
-    "test-cov",
-    "cov-report-xml",
+  "test-cov",
+  "cov-report-xml",
 ]
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-    "black>=23.1.0",
-    "mypy>=1.0.0",
-    "ruff>=0.0.243",
+  "black>=23.1.0",
+  "mypy>=1.0.0",
+  "ruff>=0.0.243",
 ]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/privateer tests}"
 style = [
-    "ruff {args:.}",
-    "black --check --diff {args:.}",
+  "ruff {args:.}",
+  "black --check --diff {args:.}",
 ]
 fmt = [
-    "black {args:.}",
-    "ruff --fix {args:.}",
-    "style",
+  "black {args:.}",
+  "ruff --fix {args:.}",
+  "style",
 ]
 all = [
-    "style",
-    "typing",
+  "style",
+  "typing",
 ]
 
 [tool.black]
 target-version = ["py37"]
-line-length = 120
+line-length = 80
 skip-string-normalization = true
 
 [tool.ruff]
 target-version = "py37"
-line-length = 120
+line-length = 80
 select = [
-    "A",
-    "ARG",
-    "B",
-    "C",
-    "DTZ",
-    "E",
-    "EM",
-    "F",
-    "FBT",
-    "I",
-    "ICN",
-    "ISC",
-    "N",
-    "PLC",
-    "PLE",
-    "PLR",
-    "PLW",
-    "Q",
-    "RUF",
-    "S",
-    "T",
-    "TID",
-    "UP",
-    "W",
-    "YTT",
+  "A",
+  "ARG",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
 ]
 ignore = [
-    # Allow non-abstract empty methods in abstract base classes
-    "B027",
-    # Allow boolean positional values in function calls, like `dict.get(... True)`
-    "FBT003",
-    # Ignore checks for possible passwords
-    "S105", "S106", "S107",
-    # Ignore complexity
-    "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-    # Ignore print statements
-    "T201"
+  # Allow non-abstract empty methods in abstract base classes
+  "B027",
+  # Allow boolean positional values in function calls, like `dict.get(... True)`
+  "FBT003",
+  # Ignore checks for possible passwords
+  "S105", "S106", "S107",
+  # Ignore complexity
+  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  # Let us use random
+  "S311",
+  # Let us use print
+  "T201"
 ]
 unfixable = [
-    # Don't touch unused imports
-    "F401",
+  # Don't touch unused imports
+  "F401",
 ]
 
 [tool.ruff.isort]
@@ -156,11 +162,11 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-source = ["src"]
+source_pkgs = ["privateer", "tests"]
 branch = true
 parallel = true
 omit = [
-    "src/privateer/__about__.py"
+  "src/privateer/__about__.py",
 ]
 
 [tool.coverage.paths]
@@ -169,7 +175,7 @@ tests = ["tests", "*/privateer/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
-    "no cov",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
 ]

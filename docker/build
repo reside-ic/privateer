@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -exu
+
+HERE=$(dirname $0)
+. $HERE/common
+
+docker build --pull \
+       --tag $TAG_SERVER_SHA \
+       -f $HERE/Dockerfile.server \
+       $HERE
+
+docker build --pull \
+       --tag $TAG_CLIENT_SHA \
+       -f $HERE/Dockerfile.client \
+       $HERE
+
+docker push $TAG_SERVER_SHA
+docker push $TAG_CLIENT_SHA
+
+docker tag $TAG_SERVER_SHA $TAG_SERVER_BRANCH
+docker push $TAG_SERVER_BRANCH
+docker tag $TAG_CLIENT_SHA $TAG_CLIENT_BRANCH
+docker push $TAG_CLIENT_BRANCH
+
+if [ $GIT_BRANCH == "main" ]; then
+   docker tag $TAG_SERVER_SHA $TAG_SERVER_LATEST
+   docker push $TAG_SERVER_LATEST
+   docker tag $TAG_CLIENT_SHA $TAG_CLIENT_LATEST
+   docker push $TAG_CLIENT_LATEST
+fi

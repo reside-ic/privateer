@@ -1,94 +1,142 @@
 import json
-import os.path
+from typing import List, Optional
+
+from pydantic import BaseModel
+
+from privateer.util import match_value
+from privateer.vault import vault_client
 
 
-# We want these classes to be serializable by the `json` package, so use this base class
-# which inherits from dict and will get correctly serialized by `json.dumps`
-class Serializable(dict):
-    def __init__(self):
-        dict.__init__(self)
-
-    def __getattr__(self, key):
-        return self[key]
-
-    def __setattr__(self, key, value):
-        self[key] = value
+def read_config(path):
+    with open(path) as f:
+        return Config(**json.loads(f.read().strip()))
 
 
-class PrivateerHost(Serializable):
-    def __init__(self, dat):
-        Serializable.__init__(self)
-        host_type = dat["type"]
-        if host_type not in ("remote", "local"):
-            msg = "Host type must be 'remote' or 'local'."
-            raise Exception(msg)
-        self.name = dat["name"]
-        self.host_type = host_type
-        self.path = dat["path"]
-        if host_type == "local" and not os.path.isabs(self.path):
-            self.path = os.path.abspath(self.path)
-            print(f"Relative path provided; resolving to {self.path}")
-        if host_type == "remote":
-            self.hostname = dat["hostname"]
-            if "user" in dat:
-                self.user = dat["user"]
-            else:
-                self.user = None
-            if "port" in dat:
-                self.port = dat["port"]
-            else:
-                self.port = None
+class ScheduleJob(BaseModel):
+    server: str
+    volume: str
+    schedule: str
 
 
-class PrivateerTarget(Serializable):
-    def __init__(self, dat):
-        Serializable.__init__(self)
-        if dat["type"] != "volume":
-            msg = "Only 'volume' targets are supported."
-            raise Exception(msg)
-        self.name = dat["name"]
-        self.type = dat["type"]
-        if "schedules" in dat:
-            self.schedules = [BackupSchedule(s) for s in dat["schedules"]]
-            if len({s.name for s in self.schedules}) < len(self.schedules):
-                ex = f"Schedules must have unique names. Found duplicate schedule names for target {self.name}"
-                raise Exception(ex)
-        else:
-            self.schedules = []
+class Schedule(BaseModel):
+    port: Optional[int] = None
+    container: str = "privateer_scheduler"
+    jobs: List[ScheduleJob]
 
 
-class BackupSchedule(Serializable):
-    def __init__(self, dat):
-        Serializable.__init__(self)
-        self.name = dat["name"]
-        if dat["name"] == "daily":
-            self.schedule = "0 2 * * *"
-        elif dat["name"] == "weekly":
-            self.schedule = "0 3 * * 1"
-        elif dat["name"] == "monthly":
-            self.schedule = "0 4 1 * *"
-        else:
-            self.schedule = dat["cron"]
-        if "retention_days" in dat:
-            self.retention_days = dat["retention_days"]
-        else:
-            self.retention_days = None
+class Server(BaseModel):
+    name: str
+    hostname: str
+    port: int
+    key_volume: str
+    data_volume: str
+    container: str
 
 
-class PrivateerConfig(Serializable):
-    def __init__(self, path):
-        Serializable.__init__(self)
-        with open(f"{path}/privateer.json") as f:
-            config = json.load(f)
-        self.targets = [PrivateerTarget(t) for t in config["targets"]]
-        self.hosts = [PrivateerHost(h) for h in config["hosts"]]
+class Client(BaseModel):
+    name: str
+    backup: List[str] = []
+    key_volume: str = "privateer_keys"
+    schedule: Optional[Schedule] = None
 
-    def get_host(self, name):
-        match = [h for h in self.hosts if h.name == name]
-        if len(match) > 1:
-            msg = f"Invalid arguments: two hosts with the name '{name}' found."
-            raise Exception(msg)
-        if len(match) == 0:
-            msg = f"Invalid arguments: no host with the name '{name}' found."
-            raise Exception(msg)
-        return match[0]
+
+class Volume(BaseModel):
+    name: str
+    local: bool = False
+
+
+class Vault(BaseModel):
+    url: str
+    prefix: str
+
+    def client(self):
+        return vault_client(self.url)
+
+
+class Config(BaseModel):
+    servers: List[Server]
+    clients: List[Client]
+    volumes: List[Volume]
+    vault: Vault
+    tag: str = "latest"
+
+    def model_post_init(self, __context):
+        _check_config(self)
+
+    def list_servers(self):
+        return [x.name for x in self.servers]
+
+    def list_clients(self):
+        return [x.name for x in self.clients]
+
+    def list_volumes(self):
+        return [x.name for x in self.volumes]
+
+    def machine_config(self, name):
+        for el in self.servers + self.clients:
+            if el.name == name:
+                return el
+        valid = self.list_servers() + self.list_clients()
+        valid_str = ", ".join(f"'{x}'" for x in valid)
+        msg = f"Invalid configuration '{name}', must be one of {valid_str}"
+        raise Exception(msg)
+
+
+# this could be put elsewhere; we find the plausible sources (original
+# clients) that backed up a source to any server.
+def find_source(cfg, volume, source):
+    if volume not in cfg.list_volumes():
+        msg = f"Unknown volume '{volume}'"
+        raise Exception(msg)
+    for v in cfg.volumes:
+        if v.name == volume and v.local:
+            if source is not None:
+                msg = f"'{volume}' is a local source, so 'source' must be empty"
+                raise Exception(msg)
+            return None
+    pos = [cl.name for cl in cfg.clients if volume in cl.backup]
+    return match_value(source, pos, "source")
+
+
+def _check_config(cfg):
+    servers = cfg.list_servers()
+    clients = cfg.list_clients()
+    _check_not_duplicated(servers, "servers")
+    _check_not_duplicated(clients, "clients")
+    err = set(cfg.list_servers()).intersection(set(cfg.list_clients()))
+    if err:
+        err_str = ", ".join(f"'{nm}'" for nm in err)
+        msg = f"Invalid machine listed as both a client and a server: {err_str}"
+        raise Exception(msg)
+    vols_local = [x.name for x in cfg.volumes if x.local]
+    vols_all = [x.name for x in cfg.volumes]
+    for cl in cfg.clients:
+        for v in cl.backup:
+            if v not in vols_all:
+                msg = f"Client '{cl.name}' backs up unknown volume '{v}'"
+                raise Exception(msg)
+            if v in vols_local:
+                msg = f"Client '{cl.name}' backs up local volume '{v}'"
+                raise Exception(msg)
+        if cl.schedule:
+            for j in cl.schedule.jobs:
+                if j.server not in servers:
+                    msg = (
+                        f"Client '{cl.name}' scheduling backup to "
+                        f"unknown server '{j.server}'"
+                    )
+                    raise Exception(msg)
+                if j.volume not in cl.backup:
+                    msg = (
+                        f"Client '{cl.name}' scheduling backup of "
+                        f"volume '{j.volume}', which it does not back up"
+                    )
+                    raise Exception(msg)
+    if cfg.vault.prefix.startswith("/secret"):
+        cfg.vault.prefix = cfg.vault.prefix[7:]
+
+
+def _check_not_duplicated(els, name):
+    if len(els) > len(set(els)):
+        msg = f"Duplicated elements in {name}"
+        raise Exception(msg)
