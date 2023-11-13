@@ -1,6 +1,10 @@
+from unittest.mock import MagicMock, call
+
 import pytest
 import vault_dev
 
+import docker
+import privateer.replicate
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen_all
@@ -73,3 +77,45 @@ def test_prevent_impossible_replication(managed_docker):
         msg = "Can only replicate from servers, but 'bob' is a client"
         with pytest.raises(Exception, match=msg):
             replicate(cfg, "bob", "other", "carol")
+
+
+def test_can_replicate_between_servers(managed_docker, monkeypatch):
+    mock_run = MagicMock()
+    monkeypatch.setattr(
+        privateer.replicate, "run_container_with_command", mock_run
+    )
+    with vault_dev.Server(export_token=True) as server:
+        cfg = read_config("example/complex.json")
+        cfg.vault.url = server.url()
+        vol_alice = managed_docker("volume")
+        vol_carol = managed_docker("volume")
+        vol_other = managed_docker("volume")
+        cfg.servers[0].key_volume = vol_alice
+        cfg.servers[1].key_volume = vol_carol
+        cfg.volumes[1].name = vol_other
+        keygen_all(cfg)
+        configure(cfg, "alice")
+        replicate(cfg, "alice", vol_other, "carol")
+        image = f"mrcide/privateer-client:{cfg.tag}"
+        command = [
+            "rsync",
+            "-av",
+            "--delete",
+            f"/privateer/local/{vol_other}",
+            f"carol:/privateer/local/{vol_other}",
+        ]
+        mounts = [
+            docker.types.Mount(
+                f"/privateer/local/{vol_other}",
+                vol_other,
+                type="volume",
+                read_only=True,
+            ),
+            docker.types.Mount(
+                "/privateer/keys", vol_alice, type="volume", read_only=True
+            ),
+        ]
+        assert mock_run.call_count == 1
+        assert mock_run.call_args == call(
+            "Replication", image, command=command, mounts=mounts
+        )

@@ -4,7 +4,7 @@ from privateer.config import find_source
 from privateer.util import mounts_str, run_container_with_command
 
 
-def replicate(cfg, name, volume, to, *, source=None, dry_run=True):
+def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
     machine = check(cfg, name, quiet=True)
     if name not in cfg.list_servers():
         msg = f"Can only replicate from servers, but '{name}' is a client"
