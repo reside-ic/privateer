@@ -4,17 +4,17 @@
             "name": "alice",
             "hostname": "alice.example.com",
             "port": 10022,
-            "key_volume": "privateer_keys",
-            "data_volume": "privateer_data",
-            "container": "privateer_server"
+            "key_volume": "privateer_alice_keys",
+            "data_volume": "privateer_alice_data",
+            "container": "privateer_alice_server"
         },
         {
             "name": "carol",
             "hostname": "carol.example.com",
-            "port": 10022,
-            "key_volume": "privateer_keys",
-            "data_volume": "privateer_data",
-            "container": "privateer_server"
+            "port": 10023,
+            "key_volume": "privateer_carol_keys",
+            "data_volume": "privateer_carol_data",
+            "container": "privateer_carol_server"
         }
     ],
     "clients": [
