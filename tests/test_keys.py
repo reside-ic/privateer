@@ -36,7 +36,7 @@ def test_can_generate_server_keys_data_for_multiple_servers():
         dat = keys_data(cfg, "alice")
         assert dat["name"] == "alice"
         assert dat["known_hosts"].startswith(
-            "[carol.example.com]:10022 ssh-rsa"
+            "[carol.example.com]:10023 ssh-rsa"
         )
         assert dat["authorized_keys"].startswith("ssh-rsa")
 

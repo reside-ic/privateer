@@ -25,12 +25,12 @@ def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
             type="volume",
             read_only=True,
         )
-        path_data = f"/privateer/volumes/{source}/{volume}"
+        path_data = f"/privateer/volumes/{source}/{volume}/"
     else:
         mount_data = docker.types.Mount(
             f"/privateer/local/{volume}", volume, type="volume", read_only=True
         )
-        path_data = f"/privateer/local/{volume}"
+        path_data = f"/privateer/local/{volume}/"
         source = "(local)"
 
     mounts = [
@@ -39,7 +39,7 @@ def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
             "/privateer/keys", machine.key_volume, type="volume", read_only=True
         ),
     ]
-    command = ["rsync", "-av", "--delete", path_data, f"{to}:{path_data}"]
+    command = ["rsync", "-avrt", "--mkpath", "--delete", path_data, f"{to}:{path_data}"]
     if dry_run:
         cmd = ["docker", "run", "--rm", *mounts_str(mounts), image, *command]
         print("Command to manually run replication:")
