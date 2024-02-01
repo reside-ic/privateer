@@ -38,8 +38,9 @@ def server_start(cfg, name, *, dry_run=False):
         ports={"22/tcp": machine.port},
         dry_run=dry_run,
     )
-    mkdirs_container(machine.container, paths)
-    print(f"Server {name} now running on port {machine.port}")
+    if not dry_run:
+        mkdirs_container(machine.container, paths)
+        print(f"Server {name} now running on port {machine.port}")
 
 
 def server_stop(cfg, name):

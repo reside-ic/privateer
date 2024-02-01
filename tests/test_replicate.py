@@ -26,11 +26,11 @@ def test_can_print_instructions_to_run_replication(capsys, managed_docker):
         assert "Command to manually run replication:" in lines
         cmd = (
             "  docker run --rm "
-            f"-v other:/privateer/local/other:ro "
             f"-v {vol}:/privateer/keys:ro "
+            "-v other:/privateer/local/other:ro "
             f"mrcide/privateer-client:{cfg.tag} "
             "rsync -av --delete /privateer/local/other "
-            "carol:/privateer/local/other"
+            "carol:/privateer/local"
         )
         assert cmd in lines
 
@@ -50,11 +50,11 @@ def test_can_print_instructions_to_run_src_replication(capsys, managed_docker):
         assert "Command to manually run replication:" in lines
         cmd = (
             "  docker run --rm "
-            f"-v privateer_data:/privateer/volumes:ro "
             f"-v {vol}:/privateer/keys:ro "
-            f"mrcide/privateer-client:{cfg.tag} "
+            "-v privateer_alice_data:/privateer/volumes:ro "
+            "mrcide/privateer-client:latest "
             "rsync -av --delete /privateer/volumes/bob/data "
-            "carol:/privateer/volumes/bob/data"
+            "carol:/privateer/volumes/bob"
         )
         assert cmd in lines
 
@@ -102,17 +102,17 @@ def test_can_replicate_between_servers(managed_docker, monkeypatch):
             "-av",
             "--delete",
             f"/privateer/local/{vol_other}",
-            f"carol:/privateer/local/{vol_other}",
+            f"carol:/privateer/local",
         ]
         mounts = [
+            docker.types.Mount(
+                "/privateer/keys", vol_alice, type="volume", read_only=True
+            ),
             docker.types.Mount(
                 f"/privateer/local/{vol_other}",
                 vol_other,
                 type="volume",
                 read_only=True,
-            ),
-            docker.types.Mount(
-                "/privateer/keys", vol_alice, type="volume", read_only=True
             ),
         ]
         assert mock_run.call_count == 1
