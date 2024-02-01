@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, call
 import vault_dev
 
 import docker
-import privateer.server
+import privateer.backup
 from privateer.backup import backup
 from privateer.config import read_config
 from privateer.configure import configure

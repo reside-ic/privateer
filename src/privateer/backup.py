@@ -45,6 +45,3 @@ def backup(cfg, name, volume, *, server=None, dry_run=False):
         run_container_with_command(
             "Backup", image, command=command, mounts=mounts
         )
-        # TODO: also copy over some metadata at this point, via
-        # ssh; probably best to write tiny utility in the client
-        # container that will do this for us.

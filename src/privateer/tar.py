@@ -22,7 +22,10 @@ def export_tar(cfg, name, volume, *, to_dir=None, source=None, dry_run=False):
     mounts = [
         docker.types.Mount("/export", path, type="bind"),
         docker.types.Mount(
-            "/privateer", machine.data_volume, type="volume", read_only=True
+            "/privateer",
+            machine.data_volume,
+            type="volume",
+            read_only=True,
         ),
     ]
     tarfile = f"{source}-{volume}-{isotimestamp()}.tar"

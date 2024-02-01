@@ -28,6 +28,19 @@ def test_can_generate_server_keys_data():
         assert dat["authorized_keys"].startswith("ssh-rsa")
 
 
+def test_can_generate_server_keys_data_for_multiple_servers():
+    with vault_dev.Server(export_token=True) as server:
+        cfg = read_config("example/complex.json")
+        cfg.vault.url = server.url()
+        keygen_all(cfg)
+        dat = keys_data(cfg, "alice")
+        assert dat["name"] == "alice"
+        assert dat["known_hosts"].startswith(
+            "[carol.example.com]:10023 ssh-rsa"
+        )
+        assert dat["authorized_keys"].startswith("ssh-rsa")
+
+
 def test_can_generate_client_keys_data():
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")

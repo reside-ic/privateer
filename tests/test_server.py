@@ -38,8 +38,10 @@ def test_can_print_instructions_to_start_server(capsys, managed_docker):
 def test_can_start_server(monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_start = MagicMock()
+    mock_mkdirs = MagicMock()
     monkeypatch.setattr(privateer.server, "docker", mock_docker)
     monkeypatch.setattr(privateer.server, "service_start", mock_start)
+    monkeypatch.setattr(privateer.server, "mkdirs_container", mock_mkdirs)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
@@ -72,13 +74,19 @@ def test_can_start_server(monkeypatch, managed_docker):
             ports=ports,
             dry_run=False,
         )
+        assert mock_mkdirs.call_count == 1
+        assert mock_mkdirs.call_args == call(
+            name, ["/privateer/volumes/bob/data"]
+        )
 
 
 def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
     mock_docker = MagicMock()
     mock_start = MagicMock()
+    mock_mkdirs = MagicMock()
     monkeypatch.setattr(privateer.server, "docker", mock_docker)
     monkeypatch.setattr(privateer.server, "service_start", mock_start)
+    monkeypatch.setattr(privateer.server, "mkdirs_container", mock_mkdirs)
     with vault_dev.Server(export_token=True) as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
@@ -118,6 +126,10 @@ def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
             mounts=mounts,
             ports=ports,
             dry_run=False,
+        )
+        assert mock_mkdirs.call_count == 1
+        assert mock_mkdirs.call_args == call(
+            name, ["/privateer/volumes/bob/data"]
         )
 
 

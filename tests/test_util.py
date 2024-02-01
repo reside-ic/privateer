@@ -1,6 +1,7 @@
 import os
 import re
 import tarfile
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -194,3 +195,46 @@ def test_can_uniquify_list():
     assert privateer.util.unique([]) == []
     assert privateer.util.unique([1, 2, 3]) == [1, 2, 3]
     assert privateer.util.unique([3, 2, 1, 2, 3]) == [3, 2, 1]
+
+
+def test_can_create_directories(managed_docker):
+    name = managed_docker("container")
+    cl = docker.from_env()
+    container = cl.containers.run(
+        "alpine", ["sleep", "10"], detach=True, auto_remove=True
+    )
+    name = container.name
+    privateer.util.mkdirs_container(name, ["/a/b/x", "a/b/y"])
+    container = cl.containers.get(name)
+    res = privateer.util.exec_safely(container, ["ls", "/a/b"])
+    container.kill()
+    assert res.exit_code == 0
+    assert set(res.output.decode("UTF-8").strip().split("\n")) == {"x", "y"}
+
+
+def test_no_docker_for_creation_of_0_directories(monkeypatch, managed_docker):
+    mock_docker = MagicMock()
+    monkeypatch.setattr(privateer.util, "docker", mock_docker)
+    name = managed_docker("container")
+    privateer.util.mkdirs_container(name, [])
+    assert mock_docker.from_env.call_count == 0
+
+
+def test_exec_returns_output():
+    cl = docker.client.from_env()
+    container = cl.containers.run(
+        "alpine", ["sleep", "10"], detach=True, auto_remove=True
+    )
+    res = privateer.util.exec_safely(container, "ls")
+    container.kill()
+    assert res.exit_code == 0
+
+
+def test_exec_safely_throws_on_failure():
+    cl = docker.client.from_env()
+    container = cl.containers.run(
+        "alpine", ["sleep", "10"], detach=True, auto_remove=True
+    )
+    with pytest.raises(Exception, match="Error running command"):
+        privateer.util.exec_safely(container, "missing_command")
+    container.kill()

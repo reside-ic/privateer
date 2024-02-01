@@ -1,6 +1,7 @@
 import docker
 from privateer.check import check
 from privateer.service import service_start, service_status, service_stop
+from privateer.util import mkdirs_container
 
 
 def server_start(cfg, name, *, dry_run=False):
@@ -14,6 +15,7 @@ def server_start(cfg, name, *, dry_run=False):
             "/privateer/volumes", machine.data_volume, type="volume"
         ),
     ]
+    paths = []
     for v in cfg.volumes:
         if v.local:
             mounts.append(
@@ -24,6 +26,9 @@ def server_start(cfg, name, *, dry_run=False):
                     read_only=True,
                 )
             )
+        else:
+            for cl in cfg.clients:
+                paths.append(f"/privateer/volumes/{cl.name}/{v.name}")
     service_start(
         name,
         machine.container,
@@ -32,7 +37,9 @@ def server_start(cfg, name, *, dry_run=False):
         ports={"22/tcp": machine.port},
         dry_run=dry_run,
     )
-    print(f"Server {name} now running on port {machine.port}")
+    if not dry_run:
+        mkdirs_container(machine.container, paths)
+        print(f"Server {name} now running on port {machine.port}")
 
 
 def server_stop(cfg, name):
