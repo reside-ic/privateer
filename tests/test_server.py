@@ -75,7 +75,9 @@ def test_can_start_server(monkeypatch, managed_docker):
             dry_run=False,
         )
         assert mock_mkdirs.call_count == 1
-        assert mock_mkdirs.call_args == call(name, ["/privateer/volumes/bob/data"])
+        assert mock_mkdirs.call_args == call(
+            name, ["/privateer/volumes/bob/data"]
+        )
 
 
 def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
@@ -126,7 +128,10 @@ def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
             dry_run=False,
         )
         assert mock_mkdirs.call_count == 1
-        assert mock_mkdirs.call_args == call(name, ["/privateer/volumes/bob/data"])
+        assert mock_mkdirs.call_args == call(
+            name, ["/privateer/volumes/bob/data"]
+        )
+
 
 def test_can_stop_server(monkeypatch):
     mock_check = MagicMock()

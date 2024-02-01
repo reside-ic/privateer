@@ -1,5 +1,4 @@
 import docker
-import os
 from privateer.check import check
 from privateer.service import service_start, service_status, service_stop
 from privateer.util import mkdirs_container

@@ -32,7 +32,7 @@ def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
         mount_data = docker.types.Mount(
             f"/privateer/local/{volume}", volume, type="volume", read_only=True
         )
-        path_data = f"/privateer/local"
+        path_data = "/privateer/local"
         source = "(local)"
     path_volume = f"{path_data}/{volume}"
 

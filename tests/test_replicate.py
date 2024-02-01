@@ -102,7 +102,7 @@ def test_can_replicate_between_servers(managed_docker, monkeypatch):
             "-av",
             "--delete",
             f"/privateer/local/{vol_other}",
-            f"carol:/privateer/local",
+            "carol:/privateer/local",
         ]
         mounts = [
             docker.types.Mount(

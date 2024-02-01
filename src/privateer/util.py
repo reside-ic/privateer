@@ -293,5 +293,6 @@ def exec_safely(container, args, **kwargs):
     ans = container.exec_run(args, **kwargs)
     if ans[0] != 0:
         print(ans[1].decode("UTF-8"))
-        raise Exception("Error running command (see above for log)")
+        msg = "Error running command (see above for log)"
+        raise Exception(msg)
     return ans
