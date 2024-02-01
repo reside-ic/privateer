@@ -59,6 +59,14 @@ def string_from_container(container, path):
     return bytes_from_container(container, path).decode("utf-8")
 
 
+def mkdirs_container(container, paths):
+    if paths:
+        cl = docker.from_env()
+        container = cl.containers.get(container)
+        cmd = ["mkdir", "-p", *paths]
+        exec_safely(container, cmd)
+
+
 def bytes_from_container(container, path):
     stream, status = container.get_archive(path)
     try:
@@ -279,3 +287,11 @@ def transient_working_directory(path):
 
 def current_timezone_name():
     return str(tzlocal.get_localzone())
+
+
+def exec_safely(container, args, **kwargs):
+    ans = container.exec_run(args, **kwargs)
+    if ans[0] != 0:
+        print(ans[1].decode("UTF-8"))
+        raise Exception("Error running command (see above for log)")
+    return ans

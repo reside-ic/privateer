@@ -16,6 +16,8 @@ def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
         msg = f"Can't replicate to ourselves ('{to}')"
         raise Exception(msg)
 
+    # I am a a bit confused about why this is more complex than
+    # backup, but it's probable I can simplify once this works.
     image = f"mrcide/privateer-client:{cfg.tag}"
     source = find_source(cfg, volume, source)
     if source:
@@ -25,21 +27,22 @@ def replicate(cfg, name, volume, to, *, source=None, dry_run=False):
             type="volume",
             read_only=True,
         )
-        path_data = f"/privateer/volumes/{source}/{volume}/"
+        path_data = f"/privateer/volumes/{source}"
     else:
         mount_data = docker.types.Mount(
             f"/privateer/local/{volume}", volume, type="volume", read_only=True
         )
-        path_data = f"/privateer/local/{volume}/"
+        path_data = f"/privateer/local"
         source = "(local)"
+    path_volume = f"{path_data}/{volume}"
 
     mounts = [
-        mount_data,
         docker.types.Mount(
             "/privateer/keys", machine.key_volume, type="volume", read_only=True
         ),
+        mount_data,
     ]
-    command = ["rsync", "-avrt", "--mkpath", "--delete", path_data, f"{to}:{path_data}"]
+    command = ["rsync", "-av", "--delete", path_volume, f"{to}:{path_data}"]
     if dry_run:
         cmd = ["docker", "run", "--rm", *mounts_str(mounts), image, *command]
         print("Command to manually run replication:")
