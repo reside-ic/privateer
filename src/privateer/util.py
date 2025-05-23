@@ -225,7 +225,7 @@ def take_ownership(filename, directory, *, command_only=False):  # tar
     uid = os.geteuid()
     gid = os.getegid()
     cl = docker.from_env()
-    ensure_image("alpine")
+    ensure_image("ubuntu")
     mounts = [docker.types.Mount("/src", directory, type="bind")]
     command = ["chown", f"{uid}.{gid}", filename]
     if command_only:
@@ -236,12 +236,12 @@ def take_ownership(filename, directory, *, command_only=False):  # tar
             *mounts_str(mounts),
             "-w",
             "/src",
-            "alpine",
+            "ubuntu",
             *command,
         ]
     else:
         cl.containers.run(
-            "alpine",
+            "ubuntu",
             mounts=mounts,
             working_dir="/src",
             command=command,

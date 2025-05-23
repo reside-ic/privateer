@@ -152,7 +152,7 @@ def test_can_take_ownership_of_a_file(tmp_path, managed_docker):
         *privateer.util.mounts_str(mounts),
         "-w",
         "/src",
-        "alpine",
+        "ubuntu",
         "chown",
         f"{uid}.{gid}",
         "newfile",
