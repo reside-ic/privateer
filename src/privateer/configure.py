@@ -39,3 +39,8 @@ def configure(cfg, name):
         print("Adding yacron schedule")
         string_to_volume(schedule, vol, "yacron.yml", uid=0, gid=0)
     string_to_volume(name, vol, "name", uid=0, gid=0)
+
+
+def write_identity(path, name):
+    with (path / ".privateer_identity").open("w") as f:
+        f.write(f"{name}\n")

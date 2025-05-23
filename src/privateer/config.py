@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -80,6 +81,22 @@ class Config(BaseModel):
         valid_str = ", ".join(f"'{x}'" for x in valid)
         msg = f"Invalid configuration '{name}', must be one of {valid_str}"
         raise Exception(msg)
+
+
+class Root(BaseModel):
+    config: Config
+    path: Path
+
+
+def privateer_root(path: Path | None) -> Root:
+    if path is None:
+        path = Path("privateer.json")
+    elif path.is_dir():
+        path = path / "privateer.json"
+    if not path.exists():
+        msg = f"Did not find privateer configuration at '{path}'"
+        raise Exception(msg)
+    return Root(config=read_config(path), path=path.parent)
 
 
 # this could be put elsewhere; we find the plausible sources (original

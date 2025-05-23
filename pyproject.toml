@@ -24,9 +24,10 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+    "click",
     "cryptography>=3.1",
     "docker",
-    "docopt",
+    "docopt-ng",
     "hvac",
     "pydantic",
     "tzlocal",
@@ -40,6 +41,7 @@ Source = "https://github.com/reside-ic/privateer"
 
 [project.scripts]
 privateer = "privateer.cli:main"
+privateer2 = "privateer.cli2:cli"
 
 [tool.hatch.version]
 path = "src/privateer/__about__.py"
@@ -49,6 +51,7 @@ python = "python3"
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "pytest-mock",
   "vault-dev>=0.1.1"
 ]
 [tool.hatch.envs.default.scripts]
@@ -133,6 +136,7 @@ select = [
   "YTT",
 ]
 ignore = [
+  "A002",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
@@ -179,3 +183,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.mypy]
+exclude = ["docker"]

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-import yacron.config
+import yacron.config  # type: ignore
 
 from privateer.backup import backup_command
 from privateer.config import Client
