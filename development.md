@@ -10,7 +10,7 @@ We use [`vault-dev`](https://github.com/vimc/vault-dev) to bring up vault in tes
 vault server -dev -dev-kv-v1
 ```
 
-If you need to interact with this on the command line, use:
+Then export the vault details by running:
 
 ```
 export VAULT_ADDR='http://127.0.0.1:8200'
@@ -28,44 +28,38 @@ mkdir -p tmp
 sed "s/alice.example.com/$(hostname)/" example/local.json > tmp/privateer.json
 ```
 
+The following commands are all run from within `tmp/`
+
 Create a set of keys
 
 ```
-privateer --path tmp keygen --all
+privateer2 keygen --all
 ```
 
 You could also do this individually like
 
 ```
-privateer --path tmp keygen alice
+privateer2 keygen alice
 ```
 
 Set up the key volumes
 
 ```
-privateer --path tmp configure alice
-privateer --path tmp configure bob
+privateer2 configure alice
+privateer2 configure bob
 ```
 
-Start the server, as a background process (note that if these were on different machine the `privateer configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
+Start the server, as a background process (note that if these were on different machine the `privateer2 configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
 
 ```
-privateer --path tmp --as=alice server start
+privateer2 server --as=alice start
 ```
 
 Once `alice` is running, we can test this connection from `bob`:
 
 ```
-privateer --path tmp --as=bob check --connection
+privateer check --as=bob --connection
 ```
-
-This command would be simpler to run if we are in the `tmp` directory, which would be the usual situation in a multi-machine setup
-
-```
-privateer check --connection
-```
-
-For all other commands below, you can drop the `--path` and `--as` arguments if you change directory.
 
 Create some random data within the `data` volume (this is the one that we want to send from `bob` to `alice`)
 
@@ -77,13 +71,13 @@ docker run -it --rm -v data:/data ubuntu bash -c "base64 /dev/urandom | head -c 
 We can now backup from `bob` to `alice` as:
 
 ```
-privateer --path tmp --as=bob backup data
+privateer2 backup --as=bob data
 ```
 
 or see what commands you would need in order to try this yourself:
 
 ```
-privateer --path tmp --as=bob backup data --dry-run
+privateer2 backup --as=bob --dry-run data
 ```
 
 Delete the volume
@@ -95,19 +89,19 @@ docker volume rm data
 We can now restore it:
 
 ```
-privateer --path tmp --as=bob restore data
+privateer2 --as=bob restore data
 ```
 
 or see the commands to do this ourselves:
 
 ```
-privateer --path tmp --as=bob restore data --dry-run
+privateer2 --as=bob restore data --dry-run
 ```
 
 Tear down the server with
 
 ```
-privateer --path tmp --as=alice server stop
+privateer2 --as=alice server stop
 ```
 
 ## Writing tests

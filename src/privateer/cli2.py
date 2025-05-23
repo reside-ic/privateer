@@ -34,10 +34,11 @@ def cli() -> None:
 help_path = "The path to the configuration, or directory with privateer.json"
 help_as = "The machine to run the command as"
 help_dry_run = "Do nothing, but print docker commands"
+type_path = click.Path(path_type=Path)
 
 
 @cli.command("pull")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 def cli_pull(path: Path | None) -> None:
     """Pull required docker images.
 
@@ -59,7 +60,7 @@ def cli_pull(path: Path | None) -> None:
 
 @cli.command("keygen")
 @click.argument("name", required=False)
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--all", is_flag=True, help="Generate all keys")
 def cli_keygen(path: Path | None, name: str | None, *, all: bool) -> None:
     """Generate keys for use with privateer.
@@ -78,7 +79,7 @@ def cli_keygen(path: Path | None, name: str | None, *, all: bool) -> None:
 
 
 @cli.command("configure")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.argument("name")
 def cli_configure(path: Path | None, name: str) -> None:
     """Configure this machine.
@@ -95,7 +96,7 @@ def cli_configure(path: Path | None, name: str) -> None:
 
 
 @cli.command("check")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--as", "name", metavar="NAME", help=help_as)
 @click.option("--connection", is_flag=True, help="Check the connection")
 def cli_check(path: Path | None, name: str | None, *, connection: bool) -> None:
@@ -113,7 +114,7 @@ def cli_check(path: Path | None, name: str | None, *, connection: bool) -> None:
 
 
 @cli.command("backup")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--as", "name", metavar="NAME", help=help_as)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.option("--server", metavar="NAME", help="Server to back up to")
@@ -145,7 +146,7 @@ def cli_backup(
 
 
 @cli.command("restore")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--as", "name", metavar="NAME", help=help_as)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.option("--source", metavar="NAME", help="Source for the data")
@@ -181,10 +182,10 @@ def cli_restore(
 
 
 @cli.command("export")
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--as", "name", metavar="NAME", help=help_as)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
-@click.option("--to-dir", type=click.Path(), help="Directory to export to")
+@click.option("--to-dir", type=type_path, help="Directory to export to")
 @click.option("--source", metavar="NAME", help="Source for the data")
 @click.argument("volume")
 def cli_export(
@@ -239,7 +240,7 @@ def cli_import(tarfile: str, volume: str, *, dry_run: bool) -> None:
 
 @cli.command("server")
 @click.option("--as", "name", metavar="NAME", help=help_as)
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.argument("action", type=click.Choice(["start", "stop", "status"]))
 def cli_server(
@@ -262,7 +263,7 @@ def cli_server(
 
 @cli.command("schedule")
 @click.option("--as", "name", metavar="NAME", help=help_as)
-@click.option("--path", type=click.Path(), help=help_path)
+@click.option("--path", type=type_path, help=help_path)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.argument("action", type=click.Choice(["start", "stop", "status"]))
 def cli_schedule(
