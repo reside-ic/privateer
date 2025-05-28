@@ -89,14 +89,14 @@ def test_can_call_restore(tmp_path, mocker):
     write_identity(tmp_path, "bob")
     cfg = read_config(tmp_path / "privateer.json")
 
-    res = runner.invoke(cli2.cli_restore, ["--path", tmp_path, "data", "alice"])
+    res = runner.invoke(cli2.cli_restore, ["--path", tmp_path, "data"])
     assert res.exit_code == 0
     assert cli2.restore.call_count == 1
     assert cli2.restore.mock_calls[0] == call(
         cfg=cfg,
         name="bob",
         volume="data",
-        server="alice",
+        server=None,
         source=None,
         dry_run=False,
     )

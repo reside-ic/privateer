@@ -150,13 +150,13 @@ def cli_backup(
 @click.option("--as", "name", metavar="NAME", help=help_as)
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.option("--source", metavar="NAME", help="Source for the data")
+@click.option("--server", metavar="NAME", help="Server to pull from")
 @click.argument("volume")
-@click.argument("server")
 def cli_restore(
     path: Path | None,
     name: str | None,
     volume: str,
-    server: str,
+    server: str | None,
     source: str | None,
     *,
     dry_run: bool,

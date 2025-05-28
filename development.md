@@ -58,7 +58,7 @@ privateer2 server --as=alice start
 Once `alice` is running, we can test this connection from `bob`:
 
 ```
-privateer check --as=bob --connection
+privateer2 check --as=bob --connection
 ```
 
 Create some random data within the `data` volume (this is the one that we want to send from `bob` to `alice`)
@@ -89,19 +89,19 @@ docker volume rm data
 We can now restore it:
 
 ```
-privateer2 --as=bob restore data
+privateer2 restore --as=bob data
 ```
 
 or see the commands to do this ourselves:
 
 ```
-privateer2 --as=bob restore data --dry-run
+privateer2 restore --as=bob data --dry-run
 ```
 
 Tear down the server with
 
 ```
-privateer2 --as=alice server stop
+privateer2 server --as=alice stop
 ```
 
 ## Writing tests
