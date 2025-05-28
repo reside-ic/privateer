@@ -41,7 +41,6 @@ Source = "https://github.com/reside-ic/privateer"
 
 [project.scripts]
 privateer = "privateer.cli:main"
-privateer2 = "privateer.cli2:cli"
 
 [tool.hatch.version]
 path = "src/privateer/__about__.py"

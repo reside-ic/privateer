@@ -33,32 +33,32 @@ The following commands are all run from within `tmp/`
 Create a set of keys
 
 ```
-privateer2 keygen --all
+ keygen --all
 ```
 
 You could also do this individually like
 
 ```
-privateer2 keygen alice
+ keygen alice
 ```
 
 Set up the key volumes
 
 ```
-privateer2 configure alice
-privateer2 configure bob
+ configure alice
+ configure bob
 ```
 
-Start the server, as a background process (note that if these were on different machine the `privateer2 configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
+Start the server, as a background process (note that if these were on different machine the ` configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
 
 ```
-privateer2 server --as=alice start
+ server --as=alice start
 ```
 
 Once `alice` is running, we can test this connection from `bob`:
 
 ```
-privateer2 check --as=bob --connection
+ check --as=bob --connection
 ```
 
 Create some random data within the `data` volume (this is the one that we want to send from `bob` to `alice`)
@@ -71,13 +71,13 @@ docker run -it --rm -v data:/data ubuntu bash -c "base64 /dev/urandom | head -c 
 We can now backup from `bob` to `alice` as:
 
 ```
-privateer2 backup --as=bob data
+ backup --as=bob data
 ```
 
 or see what commands you would need in order to try this yourself:
 
 ```
-privateer2 backup --as=bob --dry-run data
+ backup --as=bob --dry-run data
 ```
 
 Delete the volume
@@ -89,19 +89,19 @@ docker volume rm data
 We can now restore it:
 
 ```
-privateer2 restore --as=bob data
+ restore --as=bob data
 ```
 
 or see the commands to do this ourselves:
 
 ```
-privateer2 restore --as=bob data --dry-run
+ restore --as=bob data --dry-run
 ```
 
 Tear down the server with
 
 ```
-privateer2 server --as=alice stop
+ server --as=alice stop
 ```
 
 ## Writing tests
