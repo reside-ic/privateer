@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -20,9 +19,9 @@ class ScheduleJob(BaseModel):
 
 
 class Schedule(BaseModel):
-    port: Optional[int] = None
+    port: int | None = None
     container: str = "privateer_scheduler"
-    jobs: List[ScheduleJob]
+    jobs: list[ScheduleJob]
 
 
 class Server(BaseModel):
@@ -36,9 +35,9 @@ class Server(BaseModel):
 
 class Client(BaseModel):
     name: str
-    backup: List[str] = []
+    backup: list[str] = []
     key_volume: str = "privateer_keys"
-    schedule: Optional[Schedule] = None
+    schedule: Schedule | None = None
 
 
 class Volume(BaseModel):
@@ -55,9 +54,9 @@ class Vault(BaseModel):
 
 
 class Config(BaseModel):
-    servers: List[Server]
-    clients: List[Client]
-    volumes: List[Volume]
+    servers: list[Server]
+    clients: list[Client]
+    volumes: list[Volume]
     vault: Vault
     tag: str = "latest"
 
