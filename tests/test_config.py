@@ -190,8 +190,14 @@ def test_error_if_config_not_found(tmp_path):
         privateer_root(tmp_path)
 
 
-def test_error_look_in_local_directory_by_default(tmp_path):
+def test_look_in_local_directory_by_default(tmp_path):
     shutil.copy("example/simple.json", tmp_path / "privateer.json")
     with transient_working_directory(tmp_path):
         root = privateer_root(None)
         assert root.path == Path(".")
+
+
+def test_find_configuration_in_path_default(tmp_path):
+    shutil.copy("example/simple.json", tmp_path / "privateer.json")
+    assert privateer_root(tmp_path).path == tmp_path
+    assert privateer_root(tmp_path / "privateer.json").path == tmp_path
