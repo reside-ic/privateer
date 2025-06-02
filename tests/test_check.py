@@ -9,7 +9,6 @@ from privateer.check import _check_connections, check
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen_all
-from privateer.util import transient_envvar
 
 
 def test_can_check_quietly(capsys, managed_docker):
