@@ -11,9 +11,10 @@ from privateer.yacron import generate_yacron_yaml
 
 
 def test_can_unpack_keys_for_server(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.servers[0].key_volume = vol
         keygen_all(cfg)
@@ -37,9 +38,10 @@ def test_can_unpack_keys_for_server(managed_docker):
 
 
 def test_can_unpack_keys_for_client(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)
@@ -69,9 +71,10 @@ def test_can_unpack_keys_for_client(managed_docker):
 
 
 def test_can_write_schedule_for_client(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/schedule.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)

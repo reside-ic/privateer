@@ -9,12 +9,14 @@ from privateer.check import _check_connections, check
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen_all
+from privateer.util import transient_envvar
 
 
 def test_can_check_quietly(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.servers[0].key_volume = vol
         keygen_all(cfg)
@@ -28,9 +30,10 @@ def test_can_check_quietly(capsys, managed_docker):
 
 
 def test_error_on_check_if_unconfigured(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.servers[0].key_volume = vol
         with pytest.raises(Exception, match="'alice' looks unconfigured"):
@@ -38,9 +41,10 @@ def test_error_on_check_if_unconfigured(managed_docker):
 
 
 def test_error_on_check_if_unknown_machine():
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         msg = "Invalid configuration 'eve', must be one of 'alice', 'bob'"
         with pytest.raises(Exception, match=msg):
             check(cfg, "eve")
@@ -49,9 +53,10 @@ def test_error_on_check_if_unknown_machine():
 def test_can_check_connections(capsys, monkeypatch, managed_docker):
     mock_docker = MagicMock()
     monkeypatch.setattr(privateer.check, "docker", mock_docker)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys_bob = managed_docker("volume")
         cfg.servers[0].key_volume = managed_docker("volume")
         cfg.clients[0].key_volume = vol_keys_bob
@@ -87,9 +92,10 @@ def test_can_report_connection_failure(capsys, monkeypatch, managed_docker):
     monkeypatch.setattr(privateer.check, "docker", mock_docker)
     client = mock_docker.from_env.return_value
     client.containers.run.side_effect = err
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys_bob = managed_docker("volume")
         cfg.servers[0].key_volume = managed_docker("volume")
         cfg.clients[0].key_volume = vol_keys_bob
@@ -122,9 +128,10 @@ def test_can_report_connection_failure(capsys, monkeypatch, managed_docker):
 def test_only_test_connection_for_clients(monkeypatch, managed_docker):
     mock_check = MagicMock()
     monkeypatch.setattr(privateer.check, "_check_connections", mock_check)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         cfg.servers[0].key_volume = managed_docker("volume")
         cfg.servers[0].data_volume = managed_docker("volume")
         cfg.clients[0].key_volume = managed_docker("volume")

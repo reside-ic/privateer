@@ -48,9 +48,10 @@ class Volume(BaseModel):
 class Vault(BaseModel):
     url: str
     prefix: str
+    token: str | None = None
 
     def client(self):
-        return vault_client(self.url)
+        return vault_client(self.url, self.token)
 
 
 class Config(BaseModel):

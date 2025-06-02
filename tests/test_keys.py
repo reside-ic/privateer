@@ -5,9 +5,10 @@ from privateer.keys import keygen, keygen_all, keys_data
 
 
 def test_can_create_keys():
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         keygen(cfg, "alice")
         client = cfg.vault.client()
         response = client.secrets.kv.v1.read_secret("/privateer/alice")
@@ -18,9 +19,10 @@ def test_can_create_keys():
 
 
 def test_can_generate_server_keys_data():
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         keygen_all(cfg)
         dat = keys_data(cfg, "alice")
         assert dat["name"] == "alice"
@@ -29,9 +31,10 @@ def test_can_generate_server_keys_data():
 
 
 def test_can_generate_client_keys_data():
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         keygen_all(cfg)
         dat = keys_data(cfg, "bob")
         assert dat["name"] == "bob"

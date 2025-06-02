@@ -41,9 +41,10 @@ def test_can_export_local_volume(tmp_path, managed_docker):
 
 
 def test_can_print_instructions_for_export_volume(managed_docker, capsys):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data = managed_docker("volume")
         name = managed_docker("container")
@@ -70,9 +71,10 @@ def test_can_print_instructions_for_export_volume(managed_docker, capsys):
 def test_can_export_managed_volume(monkeypatch, managed_docker):
     mock_tar_create = MagicMock()
     monkeypatch.setattr(privateer.tar, "_run_tar_create", mock_tar_create)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.servers[0].key_volume = managed_docker("volume")
         cfg.servers[0].data_volume = vol
@@ -98,9 +100,10 @@ def test_can_export_local_managed_volume(monkeypatch, managed_docker):
     mock_tar_create = MagicMock()
     monkeypatch.setattr(privateer.tar, "_run_tar_create", mock_tar_create)
     monkeypatch.setattr(privateer.tar, "export_tar_local", mock_tar_local)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data = managed_docker("volume")
         vol_other = managed_docker("volume")
@@ -128,9 +131,10 @@ def test_throw_if_local_volume_does_not_exist(managed_docker):
 
 
 def test_throw_if_volume_does_not_exist(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.servers[0].key_volume = managed_docker("volume")
         cfg.servers[0].data_volume = vol

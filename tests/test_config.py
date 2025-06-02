@@ -33,8 +33,9 @@ def test_can_read_config():
 
 def test_can_create_vault_client():
     cfg = read_config("example/simple.json")
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         client = cfg.vault.client()
         assert client.is_authenticated()
 
