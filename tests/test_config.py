@@ -1,7 +1,16 @@
+import shutil
+from pathlib import Path
+
 import pytest
 import vault_dev
 
-from privateer.config import _check_config, find_source, read_config
+from privateer.config import (
+    _check_config,
+    find_source,
+    privateer_root,
+    read_config,
+)
+from privateer.util import transient_working_directory
 
 
 def test_can_read_config():
@@ -173,3 +182,15 @@ def test_can_validate_schedule_backs_up_correct_volume():
     )
     with pytest.raises(Exception, match=msg):
         _check_config(cfg)
+
+
+def test_error_if_config_not_found(tmp_path):
+    with pytest.raises(Exception, match="Did not find privateer configuration"):
+        privateer_root(tmp_path)
+
+
+def test_error_look_in_local_directory_by_default(tmp_path):
+    shutil.copy("example/simple.json", tmp_path / "privateer.json")
+    with transient_working_directory(tmp_path):
+        root = privateer_root(None)
+        assert root.path == Path(".")

@@ -5,7 +5,7 @@ import click
 import docker
 from privateer.backup import backup
 from privateer.check import check
-from privateer.config import Root, privateer_root
+from privateer.config import privateer_root
 from privateer.configure import configure, write_identity
 from privateer.keys import keygen, keygen_all
 from privateer.restore import restore
@@ -21,7 +21,9 @@ class NaturalOrderGroup(click.Group):
     """
 
     def list_commands(self, ctx):  # noqa: ARG002
-        return self.commands.keys()
+        # This is clearly being used in building the cli, but the
+        # coverage checker does not spot that.
+        return self.commands.keys()  # no cover
 
 
 @click.group(cls=NaturalOrderGroup)
@@ -109,7 +111,7 @@ def cli_check(path: Path | None, name: str | None, *, connection: bool) -> None:
 
     """
     root = privateer_root(path)
-    name = _find_identity(name, root)
+    name = _find_identity(name, root.path)
     check(cfg=root.config, name=name, connection=connection)
 
 
@@ -135,7 +137,7 @@ def cli_backup(
 
     """
     root = privateer_root(path)
-    name = _find_identity(name, root)
+    name = _find_identity(name, root.path)
     backup(
         cfg=root.config,
         name=name,
@@ -170,7 +172,7 @@ def cli_restore(
 
     """
     root = privateer_root(path)
-    name = _find_identity(name, root)
+    name = _find_identity(name, root.path)
     restore(
         cfg=root.config,
         name=name,
@@ -279,10 +281,10 @@ def cli_schedule(
         schedule_status(cfg=root.config, name=name)
 
 
-def _find_identity(name: str | None, root: Root) -> str:
+def _find_identity(name: str | None, path: Path) -> str:
     if name:
         return name
-    path_as = root.path / ".privateer_identity"
+    path_as = path / ".privateer_identity"
     if not path_as.exists():
         msg = (
             "Can't determine identity; did you forget to configure?"

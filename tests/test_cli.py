@@ -1,6 +1,7 @@
 import shutil
 from unittest.mock import call
 
+import pytest
 from click.testing import CliRunner
 
 from privateer import cli
@@ -31,6 +32,24 @@ def test_can_run_keygen(tmp_path, mocker):
     assert res.exit_code == 0
     assert cli.keygen_all.call_count == 1
     assert cli.keygen_all.mock_calls[0] == call(cfg)
+
+
+def test_can_run_pull(tmp_path, mocker):
+    mocker.patch("privateer.cli.docker")
+    runner = CliRunner()
+    shutil.copy("example/simple.json", tmp_path / "privateer.json")
+
+    res = runner.invoke(cli.cli_pull, ["--path", tmp_path])
+    assert res.exit_code == 0
+    assert cli.docker.from_env.call_count == 1
+    client = cli.docker.from_env.return_value
+    assert client.images.pull.call_count == 2
+    assert client.images.pull.mock_calls[0] == call(
+        "mrcide/privateer-client:latest"
+    )
+    assert client.images.pull.mock_calls[1] == call(
+        "mrcide/privateer-server:latest"
+    )
 
 
 def test_can_run_configure(tmp_path, mocker):
@@ -197,3 +216,13 @@ def test_can_interact_with_schedule(tmp_path, mocker):
     assert res.exit_code == 0
     assert cli.schedule_stop.call_count == 1
     assert cli.schedule_stop.mock_calls[0] == call(cfg=cfg, name=None)
+
+
+def test_can_read_identity(tmp_path):
+    path = tmp_path / ".privateer_identity"
+    assert cli._find_identity("bob", tmp_path) == "bob"
+    with pytest.raises(Exception, match="Can't determine identity"):
+        cli._find_identity(None, tmp_path)
+    with path.open("w") as f:
+        f.write("alice\n")
+    assert cli._find_identity(None, tmp_path) == "alice"
