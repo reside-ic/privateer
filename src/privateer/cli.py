@@ -166,7 +166,7 @@ def cli_restore(
     """Restore data to a volume.
 
     Restores `volume` from `server`.  The `--source` argument controls
-    where `server` *originally* recieved the data from, in the case
+    where `server` *originally* received the data from, in the case
     where two different machines are backing up the same volume to a
     server.
 
@@ -251,7 +251,7 @@ def cli_server(
     """Interact with the privateer server.
 
     You can start, stop or get the status of the server.  The server
-    is required to recieve backups and runs sshd.
+    is required to receive backups and runs sshd.
 
     """
     root = privateer_root(path)

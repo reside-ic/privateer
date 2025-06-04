@@ -49,7 +49,7 @@ Set up the key volumes
  configure bob
 ```
 
-Start the server, as a background process (note that if these were on different machine the ` configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
+Start the server, as a background process (note that if these were on different machines the ` configure <name>` step would generate the `.privateer_identity` automatically so the `--as` argument is not needed)
 
 ```
  server --as=alice start
