@@ -41,8 +41,8 @@ def test_disallow_both_name_and_all(tmp_path, mocker):
     shutil.copy("example/simple.json", tmp_path / "privateer.json")
 
     res = runner.invoke(cli.cli_keygen, ["--path", tmp_path, "--all", "bob"])
-    res.exit_code == 1
-    assert type(res.exception) == RuntimeError
+    assert res.exit_code == 1
+    assert type(res.exception) is RuntimeError
     assert "Don't provide 'name'" in str(res.exception)
 
 
