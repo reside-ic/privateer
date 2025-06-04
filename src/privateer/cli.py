@@ -1,49 +1,12 @@
-"""Usage:
-  privateer --version
-  privateer [options] pull
-  privateer [options] keygen (<name> | --all)
-  privateer [options] configure <name>
-  privateer [options] check [--connection]
-  privateer [options] backup <volume> [--server=NAME]
-  privateer [options] restore <volume> [--server=NAME] [--source=NAME]
-  privateer [options] export <volume> [--to-dir=PATH] [--source=NAME]
-  privateer [options] import <tarfile> <volume>
-  privateer [options] server (start | stop | status)
-  privateer [options] schedule (start | stop | status)
+from pathlib import Path
 
-Options:
-  --path=PATH  The path to the configuration, or directory with privateer.json
-  --as=NAME    The machine to run the command as
-  --dry-run    Do nothing, but print docker commands
-
-Commentary:
-  In all the above '--as' (or <name>) refers to the name of the client
-  or server being acted on; the machine we are generating keys for,
-  configuring, checking, serving, backing up from or restoring to.
-
-  Note that the 'import' subcommand is quite different and does not
-  interact with the configuration; it will reject options '--as' and
-  '--path'. If 'volume' exists already, it will fail, so this is
-  fairly safe.  If running export with '--source=local' then the
-  configuration is not read - this can be used anywhere to create a
-  tar file of a local volume, which is suitable for importing with
-  'import'.
-
-  The server and schedule commands start background containers that
-  run forever (with the 'start' option). Check in on them with
-  'status' or stop them with 'stop'.
-"""
-
-import os
-
-import docopt
+import click
 
 import docker
-import privateer.__about__ as about
 from privateer.backup import backup
 from privateer.check import check
-from privateer.config import read_config
-from privateer.configure import configure
+from privateer.config import privateer_root
+from privateer.configure import configure, write_identity
 from privateer.keys import keygen, keygen_all
 from privateer.restore import restore
 from privateer.schedule import schedule_start, schedule_status, schedule_stop
@@ -51,10 +14,45 @@ from privateer.server import server_start, server_status, server_stop
 from privateer.tar import export_tar, export_tar_local, import_tar
 
 
-def pull(cfg):
+class NaturalOrderGroup(click.Group):
+    """A click utility to define commands in the order defined.
+
+    See https://github.com/pallets/click/issues/513 for context.
+    """
+
+    def list_commands(self, ctx):  # noqa: ARG002
+        # This is clearly being used in building the cli, but the
+        # coverage checker does not spot that.
+        return self.commands.keys()  # no cover
+
+
+@click.group(cls=NaturalOrderGroup)
+@click.version_option()
+def cli() -> None:
+    """Interact with privateer."""
+    pass  # pragma: no cover
+
+
+help_path = "The path to the configuration, or directory with privateer.json"
+help_as = "The machine to run the command as"
+help_dry_run = "Do nothing, but print docker commands"
+type_path = click.Path(path_type=Path)
+
+
+@cli.command("pull")
+@click.option("--path", type=type_path, help=help_path)
+def cli_pull(path: Path | None) -> None:
+    """Pull required docker images.
+
+    The tag for images will be pulled from the local configuration
+    (privateer.json in the local directory), which falls back on
+    `main` if not specified.
+    """
+    root = privateer_root(path)
+    tag = root.config.tag
     img = [
-        f"mrcide/privateer-client:{cfg.tag}",
-        f"mrcide/privateer-server:{cfg.tag}",
+        f"mrcide/privateer-client:{tag}",
+        f"mrcide/privateer-server:{tag}",
     ]
     cl = docker.from_env()
     for nm in img:
@@ -62,160 +60,239 @@ def pull(cfg):
         cl.images.pull(nm)
 
 
-def _dont_use(name, opts, cmd):
-    if opts[name]:
-        msg = f"Don't use '{name}' with '{cmd}'"
-        raise Exception(msg)
+@cli.command("keygen")
+@click.argument("name", required=False)
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--all", is_flag=True, help="Generate all keys")
+def cli_keygen(path: Path | None, name: str | None, *, all: bool) -> None:
+    """Generate keys for use with privateer.
+
+    Keys will be stored in the vault, on creation, and this will
+    overwrite any previously written keys.  You can generate the key
+    for a single machine (passing `name=MACHINE`) or all keys at once
+    (passing `--all`).
+
+    """
+    root = privateer_root(path)
+    if all:
+        if name is not None:
+            msg = "Don't provide 'name' if '--all' is also provided"
+            raise RuntimeError(msg)
+        keygen_all(root.config)
+    else:
+        keygen(root.config, name)
 
 
-def _find_identity(name, root_config):
+@cli.command("configure")
+@click.option("--path", type=type_path, help=help_path)
+@click.argument("name")
+def cli_configure(path: Path | None, name: str) -> None:
+    """Configure this machine.
+
+    A machine indicated by the `.privateer_identity` file in the same
+    location as `privateer.json`.  This command also updates volumes
+    to contain any data required by the role implied by the machine
+    name.
+
+    """
+    root = privateer_root(path)
+    configure(root.config, name)
+    write_identity(root.path, name)
+
+
+@cli.command("check")
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--connection", is_flag=True, help="Check the connection")
+def cli_check(path: Path | None, name: str | None, *, connection: bool) -> None:
+    """Check privateer configuration and connections.
+
+    This command checks that everything is appropriately configured
+    for use as a particular machine.  If `--connection` is passed we
+    also check that we can communicate with any servers and can make
+    connections with the keys that we hold.
+
+    """
+    root = privateer_root(path)
+    name = _find_identity(name, root.path)
+    check(cfg=root.config, name=name, connection=connection)
+
+
+@cli.command("backup")
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.option("--server", metavar="NAME", help="Server to back up to")
+@click.argument("volume")
+def cli_backup(
+    path: Path | None,
+    name: str | None,
+    volume: str,
+    server: str | None,
+    *,
+    dry_run: bool,
+) -> None:
+    """Back up a volume to a server.
+
+    Performs a backup of `volume` to `server`.  Uses `rsync` over
+    `ssh`; first uses will be slow, but subsequent uses likely much
+    faster.
+
+    """
+    root = privateer_root(path)
+    name = _find_identity(name, root.path)
+    backup(
+        cfg=root.config,
+        name=name,
+        volume=volume,
+        server=server,
+        dry_run=dry_run,
+    )
+
+
+@cli.command("restore")
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.option("--source", metavar="NAME", help="Source for the data")
+@click.option("--server", metavar="NAME", help="Server to pull from")
+@click.argument("volume")
+def cli_restore(
+    path: Path | None,
+    name: str | None,
+    volume: str,
+    server: str | None,
+    source: str | None,
+    *,
+    dry_run: bool,
+) -> None:
+    """Restore data to a volume.
+
+    Restores `volume` from `server`.  The `--source` argument controls
+    where `server` *originally* received the data from, in the case
+    where two different machines are backing up the same volume to a
+    server.
+
+    """
+    root = privateer_root(path)
+    name = _find_identity(name, root.path)
+    restore(
+        cfg=root.config,
+        name=name,
+        volume=volume,
+        server=server,
+        source=source,
+        dry_run=dry_run,
+    )
+
+
+@cli.command("export")
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.option("--to-dir", type=type_path, help="Directory to export to")
+@click.option("--source", metavar="NAME", help="Source for the data")
+@click.argument("volume")
+def cli_export(
+    path: Path | None,
+    name: str | None,
+    volume: str,
+    source: str | None,
+    to_dir: str | None,
+    *,
+    dry_run: bool,
+) -> None:
+    """Export a volume as tar file.
+
+    If using `--source=local` then no configuration is read, this will
+    create a tar file of any docker volume.
+
+    """
+    if source == "local":
+        # Disallow:
+        #   --path (no use of root)
+        #   --as [name] (requires config)
+        export_tar_local(volume=volume, to_dir=to_dir, dry_run=dry_run)
+    else:
+        root = privateer_root(path)
+        export_tar(
+            cfg=root.config,
+            name=name,
+            volume=volume,
+            to_dir=to_dir,
+            source=source,
+            dry_run=dry_run,
+        )
+
+
+@cli.command("import")
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.argument("tarfile")
+@click.argument("volume")
+def cli_import(tarfile: str, volume: str, *, dry_run: bool) -> None:
+    """Import a volume from a tarfile.
+
+    Given a tarfile containing the exported contents of a volume,
+    import it into a local volume.  This command does not interact
+    with any privateer configuration and can be run anywhere.
+
+    If the volume exists already, this command will immediately fail,
+    with no data written.
+
+    """
+    import_tar(volume=volume, tarfile=tarfile, dry_run=dry_run)
+
+
+@cli.command("server")
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.argument("action", type=click.Choice(["start", "stop", "status"]))
+def cli_server(
+    path: Path | None, name: str, action: str, *, dry_run: bool
+) -> None:
+    """Interact with the privateer server.
+
+    You can start, stop or get the status of the server.  The server
+    is required to receive backups and runs sshd.
+
+    """
+    root = privateer_root(path)
+    if action == "start":
+        server_start(cfg=root.config, name=name, dry_run=dry_run)
+    elif action == "stop":
+        server_stop(cfg=root.config, name=name)
+    else:  # status
+        server_status(cfg=root.config, name=name)
+
+
+@cli.command("schedule")
+@click.option("--as", "name", metavar="NAME", help=help_as)
+@click.option("--path", type=type_path, help=help_path)
+@click.option("--dry-run", is_flag=True, help=help_dry_run)
+@click.argument("action", type=click.Choice(["start", "stop", "status"]))
+def cli_schedule(
+    path: Path | None, name: str, action: str, *, dry_run: bool
+) -> None:
+    """Interact with the privateer scheduled backups."""
+    root = privateer_root(path)
+    if action == "start":
+        schedule_start(cfg=root.config, name=name, dry_run=dry_run)
+    elif action == "stop":
+        schedule_stop(cfg=root.config, name=name)
+    else:  # status
+        schedule_status(cfg=root.config, name=name)
+
+
+def _find_identity(name: str | None, path: Path) -> str:
     if name:
         return name
-    path_as = os.path.join(root_config, ".privateer_identity")
-    if not os.path.exists(path_as):
+    path_as = path / ".privateer_identity"
+    if not path_as.exists():
         msg = (
             "Can't determine identity; did you forget to configure?"
             "Alternatively, pass '--as=NAME' to this command"
         )
         raise Exception(msg)
-    with open(path_as) as f:
+    with path_as.open() as f:
         return f.read().strip()
-
-
-def _do_configure(cfg, name, root):
-    configure(cfg, name)
-    with open(os.path.join(root, ".privateer_identity"), "w") as f:
-        f.write(f"{name}\n")
-
-
-def _show_version():
-    print(f"privateer {about.__version__}")
-
-
-class Call:
-    def __init__(self, target, **kwargs):
-        self.target = target
-        self.kwargs = kwargs
-
-    def run(self):
-        return self.target(**self.kwargs)
-
-    def __eq__(self, other):
-        return self.target == other.target and self.kwargs == other.kwargs
-
-
-def _parse_argv(argv):
-    opts = docopt.docopt(__doc__, argv)
-    return _parse_opts(opts)
-
-
-def _path_config(path):
-    if not path:
-        path = "privateer.json"
-    elif os.path.isdir(path):
-        path = os.path.join(path, "privateer.json")
-    if not os.path.exists(path):
-        msg = f"Did not find privateer configuration at '{path}'"
-        raise Exception(msg)
-    return path
-
-
-def _parse_opts(opts):
-    if opts["--version"]:
-        return Call(_show_version)
-
-    dry_run = opts["--dry-run"]
-    if opts["import"]:
-        _dont_use("--as", opts, "import")
-        _dont_use("--path", opts, "import")
-        return Call(
-            import_tar,
-            volume=opts["<volume>"],
-            tarfile=opts["<tarfile>"],
-            dry_run=dry_run,
-        )
-    elif opts["export"] and opts["--source"] == "local":
-        _dont_use("--as", opts, "export --local")
-        _dont_use("--path", opts, "export --local")
-        return Call(
-            export_tar_local,
-            volume=opts["<volume>"],
-            to_dir=opts["--to-dir"],
-            dry_run=dry_run,
-        )
-
-    path_config = _path_config(opts["--path"])
-    root_config = os.path.dirname(path_config)
-    cfg = read_config(path_config)
-    if opts["keygen"]:
-        _dont_use("--as", opts, "keygen")
-        if opts["--all"]:
-            return Call(keygen_all, cfg=cfg)
-        else:
-            return Call(keygen, cfg=cfg, name=opts["<name>"])
-    elif opts["configure"]:
-        _dont_use("--as", opts, "configure")
-        return Call(
-            _do_configure,
-            cfg=cfg,
-            name=opts["<name>"],
-            root=root_config,
-        )
-    elif opts["pull"]:
-        _dont_use("--as", opts, "configure")
-        return Call(pull, cfg=cfg)
-    else:
-        name = _find_identity(opts["--as"], root_config)
-        if opts["check"]:
-            connection = opts["--connection"]
-            return Call(check, cfg=cfg, name=name, connection=connection)
-        elif opts["backup"]:
-            return Call(
-                backup,
-                cfg=cfg,
-                name=name,
-                volume=opts["<volume>"],
-                server=opts["--server"],
-                dry_run=dry_run,
-            )
-        elif opts["restore"]:
-            return Call(
-                restore,
-                cfg=cfg,
-                name=name,
-                volume=opts["<volume>"],
-                server=opts["--server"],
-                source=opts["--source"],
-                dry_run=dry_run,
-            )
-        elif opts["export"]:
-            return Call(
-                export_tar,
-                cfg=cfg,
-                name=name,
-                volume=opts["<volume>"],
-                to_dir=opts["--to-dir"],
-                source=opts["--source"],
-                dry_run=dry_run,
-            )
-        elif opts["server"]:
-            if opts["start"]:
-                return Call(server_start, cfg=cfg, name=name, dry_run=dry_run)
-            elif opts["stop"]:
-                return Call(server_stop, cfg=cfg, name=name)
-            else:
-                return Call(server_status, cfg=cfg, name=name)
-        elif opts["schedule"]:
-            if opts["start"]:
-                return Call(schedule_start, cfg=cfg, name=name, dry_run=dry_run)
-            elif opts["stop"]:
-                return Call(schedule_stop, cfg=cfg, name=name)
-            else:
-                return Call(schedule_status, cfg=cfg, name=name)
-        else:
-            msg = "Invalid cli call -- privateer bug"
-            raise Exception(msg)
-
-
-def main(argv=None):
-    _parse_argv(argv).run()

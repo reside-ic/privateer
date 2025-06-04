@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from pathlib import Path
 
 from pydantic import BaseModel
 
@@ -19,9 +19,9 @@ class ScheduleJob(BaseModel):
 
 
 class Schedule(BaseModel):
-    port: Optional[int] = None
+    port: int | None = None
     container: str = "privateer_scheduler"
-    jobs: List[ScheduleJob]
+    jobs: list[ScheduleJob]
 
 
 class Server(BaseModel):
@@ -35,9 +35,9 @@ class Server(BaseModel):
 
 class Client(BaseModel):
     name: str
-    backup: List[str] = []
+    backup: list[str] = []
     key_volume: str = "privateer_keys"
-    schedule: Optional[Schedule] = None
+    schedule: Schedule | None = None
 
 
 class Volume(BaseModel):
@@ -48,15 +48,16 @@ class Volume(BaseModel):
 class Vault(BaseModel):
     url: str
     prefix: str
+    token: str | None = None
 
     def client(self):
-        return vault_client(self.url)
+        return vault_client(self.url, self.token)
 
 
 class Config(BaseModel):
-    servers: List[Server]
-    clients: List[Client]
-    volumes: List[Volume]
+    servers: list[Server]
+    clients: list[Client]
+    volumes: list[Volume]
     vault: Vault
     tag: str = "latest"
 
@@ -80,6 +81,22 @@ class Config(BaseModel):
         valid_str = ", ".join(f"'{x}'" for x in valid)
         msg = f"Invalid configuration '{name}', must be one of {valid_str}"
         raise Exception(msg)
+
+
+class Root(BaseModel):
+    config: Config
+    path: Path
+
+
+def privateer_root(path: Path | None) -> Root:
+    if path is None:
+        path = Path("privateer.json")
+    elif path.is_dir():
+        path = path / "privateer.json"
+    if not path.exists():
+        msg = f"Did not find privateer configuration at '{path}'"
+        raise Exception(msg)
+    return Root(config=read_config(path), path=path.parent)
 
 
 # this could be put elsewhere; we find the plausible sources (original

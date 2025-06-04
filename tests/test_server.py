@@ -10,9 +10,10 @@ from privateer.server import server_start, server_status, server_stop
 
 
 def test_can_print_instructions_to_start_server(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data = managed_docker("volume")
         name = managed_docker("container")
@@ -40,9 +41,10 @@ def test_can_start_server(monkeypatch, managed_docker):
     mock_start = MagicMock()
     monkeypatch.setattr(privateer.server, "docker", mock_docker)
     monkeypatch.setattr(privateer.server, "service_start", mock_start)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data = managed_docker("volume")
         name = managed_docker("container")
@@ -79,9 +81,10 @@ def test_can_start_server_with_local_volume(monkeypatch, managed_docker):
     mock_start = MagicMock()
     monkeypatch.setattr(privateer.server, "docker", mock_docker)
     monkeypatch.setattr(privateer.server, "service_start", mock_start)
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data = managed_docker("volume")
         vol_other = managed_docker("volume")

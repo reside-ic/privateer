@@ -11,9 +11,10 @@ from privateer.schedule import schedule_start, schedule_status, schedule_stop
 
 
 def test_can_print_instructions_to_start_schedule(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as schedule:
+    with vault_dev.Server() as server:
         cfg = read_config("example/schedule.json")
-        cfg.vault.url = schedule.url()
+        cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data1 = managed_docker("volume")
         vol_data2 = managed_docker("volume")
@@ -47,9 +48,10 @@ def test_can_start_schedule(monkeypatch, managed_docker):
     mock_start = MagicMock()
     monkeypatch.setattr(privateer.schedule, "docker", mock_docker)
     monkeypatch.setattr(privateer.schedule, "service_start", mock_start)
-    with vault_dev.Server(export_token=True) as schedule:
+    with vault_dev.Server() as server:
         cfg = read_config("example/schedule.json")
-        cfg.vault.url = schedule.url()
+        cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_keys = managed_docker("volume")
         vol_data1 = managed_docker("volume")
         vol_data2 = managed_docker("volume")
@@ -93,9 +95,10 @@ def test_can_start_schedule(monkeypatch, managed_docker):
 
 
 def test_cant_schedule_clients_with_no_schedule(managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)

@@ -11,9 +11,10 @@ from privateer.keys import keygen_all
 
 
 def test_can_print_instructions_to_run_backup(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)
@@ -38,9 +39,10 @@ def test_can_run_backup(monkeypatch, managed_docker):
     monkeypatch.setattr(
         privateer.backup, "run_container_with_command", mock_run
     )
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)

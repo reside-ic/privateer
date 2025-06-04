@@ -12,9 +12,10 @@ from privateer.restore import restore
 
 
 def test_can_print_instructions_to_run_restore(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)
@@ -39,9 +40,10 @@ def test_can_run_restore(monkeypatch, managed_docker):
     monkeypatch.setattr(
         privateer.restore, "run_container_with_command", mock_run
     )
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/simple.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)
@@ -74,9 +76,10 @@ def test_can_run_restore(monkeypatch, managed_docker):
 
 
 def test_restore_from_local_volume(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/local.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol = managed_docker("volume")
         cfg.clients[0].key_volume = vol
         keygen_all(cfg)
@@ -97,9 +100,10 @@ def test_restore_from_local_volume(capsys, managed_docker):
 
 
 def test_restore_from_alternative_source(capsys, managed_docker):
-    with vault_dev.Server(export_token=True) as server:
+    with vault_dev.Server() as server:
         cfg = read_config("example/complex.json")
         cfg.vault.url = server.url()
+        cfg.vault.token = server.token
         vol_bob = managed_docker("volume")
         vol_dan = managed_docker("volume")
         cfg.clients[0].key_volume = vol_bob
