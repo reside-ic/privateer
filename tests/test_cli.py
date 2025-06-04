@@ -34,6 +34,18 @@ def test_can_run_keygen(tmp_path, mocker):
     assert cli.keygen_all.mock_calls[0] == call(cfg)
 
 
+def test_disallow_both_name_and_all(tmp_path, mocker):
+    mocker.patch("privateer.cli.keygen_all")
+    mocker.patch("privateer.cli.keygen")
+    runner = CliRunner()
+    shutil.copy("example/simple.json", tmp_path / "privateer.json")
+
+    res = runner.invoke(cli.cli_keygen, ["--path", tmp_path, "--all", "bob"])
+    res.exit_code == 1
+    assert type(res.exception) == RuntimeError
+    assert "Don't provide 'name'" in str(res.exception)
+
+
 def test_can_run_pull(tmp_path, mocker):
     mocker.patch("privateer.cli.docker")
     runner = CliRunner()

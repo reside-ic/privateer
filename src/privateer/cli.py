@@ -75,6 +75,9 @@ def cli_keygen(path: Path | None, name: str | None, *, all: bool) -> None:
     """
     root = privateer_root(path)
     if all:
+        if name is not None:
+            msg = "Don't provide 'name' if '--all' is also provided"
+            raise RuntimeError(msg)
         keygen_all(root.config)
     else:
         keygen(root.config, name)
