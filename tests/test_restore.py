@@ -141,3 +141,27 @@ def test_restore_from_alternative_source(capsys, managed_docker):
             "/privateer/volumes/other/"
         )
         assert cmd in lines
+
+
+def test_can_restore_to_other_volume(capsys, managed_docker):
+    with vault_dev.Server() as server:
+        cfg = read_config("example/simple.json")
+        cfg.vault.url = server.url()
+        cfg.vault.token = server.token
+        vol = managed_docker("volume")
+        cfg.clients[0].key_volume = vol
+        keygen_all(cfg)
+        configure(cfg, "bob")
+        capsys.readouterr()  # flush previous output
+        restore(cfg, "bob", "data", to_volume="other", dry_run=True)
+        out = capsys.readouterr()
+        lines = out.out.strip().split("\n")
+        assert "Command to manually run restore:" in lines
+        cmd = (
+            "  docker run --rm "
+            f"-v {vol}:/privateer/keys:ro -v other:/privateer/volumes/other "
+            f"mrcide/privateer-client:{cfg.tag} "
+            "rsync -av --delete alice:/privateer/volumes/bob/data/ "
+            "/privateer/volumes/other/"
+        )
+        assert cmd in lines

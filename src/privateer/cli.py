@@ -156,6 +156,9 @@ def cli_backup(
 @click.option("--dry-run", is_flag=True, help=help_dry_run)
 @click.option("--source", metavar="NAME", help="Source for the data")
 @click.option("--server", metavar="NAME", help="Server to pull from")
+@click.option(
+    "--to-volume", metavar="NAME", help="Alternate volume to restore to"
+)
 @click.argument("volume")
 def cli_restore(
     path: Path | None,
@@ -163,6 +166,7 @@ def cli_restore(
     volume: str,
     server: str | None,
     source: str | None,
+    to_volume: str | None,
     *,
     dry_run: bool,
 ) -> None:
@@ -173,6 +177,9 @@ def cli_restore(
     where two different machines are backing up the same volume to a
     server.
 
+    If you provide a volume name with `--to-volume`, you can restore into a
+    volume that differs from the upstream name.
+
     """
     root = privateer_root(path)
     name = _find_identity(name, root.path)
@@ -180,6 +187,7 @@ def cli_restore(
         cfg=root.config,
         name=name,
         volume=volume,
+        to_volume=to_volume,
         server=server,
         source=source,
         dry_run=dry_run,
