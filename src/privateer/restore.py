@@ -41,10 +41,10 @@ def restore(
         print()
         print(f"  {' '.join(cmd)}")
         print()
-        print(f"This will restore data from the volume '{volume}' stored on the")
         print(
-            f"server '{server}' into our local volume '{to_volume}'; with"
-        ),
+            f"This will restore data from the volume '{volume}' stored on the"
+        )
+        print(f"server '{server}' into our local volume '{to_volume}'; with"),
         print(f"data originally from '{source}'")
         print()
         print("Note that this uses hostname/port information for the server")
