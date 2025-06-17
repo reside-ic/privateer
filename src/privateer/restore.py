@@ -41,9 +41,9 @@ def restore(
         print()
         print(f"  {' '.join(cmd)}")
         print()
-        print(f"This will data from the volume '{volume}' stored on the")
+        print(f"This will restore data from the volume '{volume}' stored on the")
         print(
-            f"server '{server}' into into our local volume '{to_volume}'; with"
+            f"server '{server}' into our local volume '{to_volume}'; with"
         ),
         print(f"data originally from '{source}'")
         print()
