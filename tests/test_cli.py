@@ -129,6 +129,7 @@ def test_can_call_restore(tmp_path, mocker):
         volume="data",
         server=None,
         source=None,
+        to_volume=None,
         dry_run=False,
     )
 

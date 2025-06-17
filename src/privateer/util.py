@@ -173,7 +173,7 @@ def rand_str(n=8):
 def log_tail(container, n):
     logs = container.logs().decode("utf-8").strip().split("\n")
     if len(logs) > n:
-        return [f"(ommitting {len(logs) - n} lines of logs)"] + logs[-n:]
+        return [f"(ommitting {len(logs) - n} lines of logs)", *logs[-n:]]
     else:
         return logs
 
