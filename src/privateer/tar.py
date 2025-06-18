@@ -5,10 +5,10 @@ import docker
 from privateer.check import check
 from privateer.config import find_source
 from privateer.util import (
+    ensure_image,
     isotimestamp,
     mounts_str,
     run_container_with_command,
-    take_ownership,
     volume_exists,
 )
 
@@ -128,3 +128,33 @@ def _run_tar_create(mounts, src, path, tarfile, dry_run):
         take_ownership(tarfile, path)
         print(f"Tar file ready at '{path}/{tarfile}'")
     return os.path.join(path, tarfile)
+
+
+# This ia hard to type because it either does something or produces
+# the list of commands to do it
+def take_ownership(filename, directory, *, command_only=False):  # tar
+    uid = os.geteuid()
+    gid = os.getegid()
+    cl = docker.from_env()
+    ensure_image("ubuntu")
+    mounts = [docker.types.Mount("/src", directory, type="bind")]
+    command = ["chown", f"{uid}.{gid}", filename]
+    if command_only:
+        return [
+            "docker",
+            "run",
+            "--rm",
+            *mounts_str(mounts),
+            "-w",
+            "/src",
+            "ubuntu",
+            *command,
+        ]
+    else:
+        cl.containers.run(
+            "ubuntu",
+            mounts=mounts,
+            working_dir="/src",
+            command=command,
+            remove=True,
+        )

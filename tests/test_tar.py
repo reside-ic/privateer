@@ -2,16 +2,21 @@ import os
 import tarfile
 from unittest.mock import MagicMock, call
 
+import docker
 import pytest
 import vault_dev
 
-import docker
 import privateer.tar
 import privateer.util
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen_all
-from privateer.tar import export_tar, export_tar_local, import_tar
+from privateer.tar import (
+    export_tar,
+    export_tar_local,
+    import_tar,
+    take_ownership,
+)
 
 
 def test_can_print_instructions_for_exporting_local_vol(managed_docker, capsys):
@@ -187,3 +192,35 @@ def test_throw_if_tarfile_does_not_exist(tmp_path, managed_docker):
     msg = f"Input file '{path}' does not exist"
     with pytest.raises(Exception, match=msg):
         import_tar(dest, path)
+
+
+def test_can_take_ownership_of_a_file(tmp_path, managed_docker):
+    cl = docker.from_env()
+    mounts = [docker.types.Mount("/src", str(tmp_path), type="bind")]
+    command = ["touch", "/src/newfile"]
+    name = managed_docker("container")
+    cl.containers.run("ubuntu", name=name, mounts=mounts, command=command)
+    path = tmp_path / "newfile"
+    info = os.stat(path)
+    assert info.st_uid == 0
+    assert info.st_gid == 0
+    uid = os.geteuid()
+    gid = os.getegid()
+    cmd = take_ownership("newfile", str(tmp_path), command_only=True)
+    expected = [
+        "docker",
+        "run",
+        "--rm",
+        *privateer.util.mounts_str(mounts),
+        "-w",
+        "/src",
+        "ubuntu",
+        "chown",
+        f"{uid}.{gid}",
+        "newfile",
+    ]
+    assert cmd == expected
+    take_ownership("newfile", str(tmp_path))
+    info = os.stat(path)
+    assert info.st_uid == uid
+    assert info.st_gid == gid

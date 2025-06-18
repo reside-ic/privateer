@@ -227,34 +227,6 @@ def isotimestamp() -> str:
     return now.strftime("%Y%m%d-%H%M%S")
 
 
-def take_ownership(filename, directory, *, command_only=False):  # tar
-    uid = os.geteuid()
-    gid = os.getegid()
-    cl = docker.from_env()
-    ensure_image("ubuntu")
-    mounts = [docker.types.Mount("/src", directory, type="bind")]
-    command = ["chown", f"{uid}.{gid}", filename]
-    if command_only:
-        return [
-            "docker",
-            "run",
-            "--rm",
-            *mounts_str(mounts),
-            "-w",
-            "/src",
-            "ubuntu",
-            *command,
-        ]
-    else:
-        cl.containers.run(
-            "ubuntu",
-            mounts=mounts,
-            working_dir="/src",
-            command=command,
-            remove=True,
-        )
-
-
 def run_container_with_command(display: str, image: str, **kwargs) -> None:
     ensure_image(image)
     client = docker.from_env()
