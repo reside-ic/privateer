@@ -40,7 +40,7 @@ Issues = "https://github.com/reside-ic/privateer/issues"
 Source = "https://github.com/reside-ic/privateer"
 
 [project.scripts]
-privateer = "privateer.cli:main"
+privateer = "privateer.cli:cli"
 
 [tool.hatch.version]
 path = "src/privateer/__about__.py"
