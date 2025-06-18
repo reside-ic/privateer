@@ -90,6 +90,7 @@ def import_tar(volume, tarfile, *, dry_run=False):
         )
 
 
+# This can be simplified by using 'docker cp' for the local version
 def _run_tar_create(mounts, src, path, tarfile, dry_run):
     image = "ubuntu"
     command = ["tar", "-cpvf", f"/export/{tarfile}", "."]
@@ -135,8 +136,6 @@ def _run_tar_create(mounts, src, path, tarfile, dry_run):
 def take_ownership(filename, directory, *, command_only=False):  # tar
     uid = os.geteuid()
     gid = os.getegid()
-    cl = docker.from_env()
-    ensure_image("ubuntu")
     mounts = [docker.types.Mount("/src", directory, type="bind")]
     command = ["chown", f"{uid}.{gid}", filename]
     if command_only:
@@ -151,6 +150,8 @@ def take_ownership(filename, directory, *, command_only=False):  # tar
             *command,
         ]
     else:
+        ensure_image("ubuntu")
+        cl = docker.from_env()
         cl.containers.run(
             "ubuntu",
             mounts=mounts,
