@@ -1,18 +1,21 @@
+import hvac
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
+from privateer.config import Config
 
-def keygen(cfg, name):
+
+def keygen(cfg: Config, name: str) -> None:
     _keygen(cfg, name, cfg.vault.client())
 
 
-def keygen_all(cfg):
+def keygen_all(cfg: Config) -> None:
     vault = cfg.vault.client()
     for name in cfg.list_servers() + cfg.list_clients():
         _keygen(cfg, name, vault)
 
 
-def keys_data(cfg, name):
+def keys_data(cfg: Config, name: str) -> dict[str, str]:
     vault = cfg.vault.client()
     response = vault.secrets.kv.v1.read_secret(f"{cfg.vault.prefix}/{name}")
     ret = {
@@ -40,7 +43,7 @@ def keys_data(cfg, name):
     return ret
 
 
-def _keygen(cfg, name, vault):
+def _keygen(cfg: Config, name: str, vault: hvac.Client):
     data = _create_keypair()
     path = f"{cfg.vault.prefix}/{name}"
     # TODO: The docs are here:
@@ -50,14 +53,16 @@ def _keygen(cfg, name, vault):
     _r = vault.secrets.kv.v1.create_or_update_secret(path, secret=data)
 
 
-def _get_pubkeys(vault, prefix, nms):
+def _get_pubkeys(
+    vault: hvac.Client, prefix: str, nms: list[str]
+) -> dict[str, str]:
     return {
         nm: vault.secrets.kv.v1.read_secret(f"{prefix}/{nm}")["data"]["public"]
         for nm in nms
     }
 
 
-def _create_keypair():
+def _create_keypair() -> dict[str, str]:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
     private = key.private_bytes(

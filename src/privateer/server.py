@@ -1,10 +1,12 @@
 import docker
-from privateer.check import check
+
+from privateer.check import check_server
+from privateer.config import Config
 from privateer.service import service_start, service_status, service_stop
 
 
-def server_start(cfg, name, *, dry_run=False):
-    machine = check(cfg, name, quiet=True)
+def server_start(cfg: Config, name: str, *, dry_run: bool = False) -> None:
+    machine = check_server(cfg, name, quiet=True)
 
     mounts = [
         docker.types.Mount(
@@ -35,11 +37,11 @@ def server_start(cfg, name, *, dry_run=False):
     print(f"Server {name} now running on port {machine.port}")
 
 
-def server_stop(cfg, name):
-    machine = check(cfg, name, quiet=True)
+def server_stop(cfg: Config, name: str) -> None:
+    machine = check_server(cfg, name, quiet=True)
     service_stop(name, machine.container)
 
 
-def server_status(cfg, name):
-    machine = check(cfg, name, quiet=False)
+def server_status(cfg: Config, name: str) -> None:
+    machine = check_server(cfg, name, quiet=False)
     service_status(machine.container)

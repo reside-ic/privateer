@@ -1,8 +1,12 @@
 import docker
+
+from privateer.config import Client, Config, Server
 from privateer.util import string_from_volume
 
 
-def check(cfg, name, *, connection=False, quiet=False):
+def check(
+    cfg: Config, name: str, *, connection: bool = False, quiet: bool = False
+) -> Server | Client:
     machine = cfg.machine_config(name)
     vol = machine.key_volume
     try:
@@ -21,7 +25,29 @@ def check(cfg, name, *, connection=False, quiet=False):
     return machine
 
 
-def _check_connections(cfg, machine):
+def check_client(
+    cfg: Config, name: str, *, connection: bool = False, quiet: bool = False
+) -> Client:
+    machine = check(cfg, name, connection=connection, quiet=quiet)
+    if not isinstance(machine, Client):
+        msg = f"'{name}' is not a privateer client (it is listed as a server)"
+        raise Exception(msg)
+    return machine
+
+
+def check_server(
+    cfg: Config, name: str, *, connection: bool = False, quiet: bool = False
+) -> Server:
+    machine = check(cfg, name, connection=connection, quiet=quiet)
+    if not isinstance(machine, Server):
+        msg = f"'{name}' is not a privateer server (it is listed as a client)"
+        raise Exception(msg)
+    return machine
+
+
+def _check_connections(
+    cfg: Config, machine: Server | Client
+) -> dict[str, bool]:
     image = f"mrcide/privateer-client:{cfg.tag}"
     mounts = [
         docker.types.Mount(
@@ -46,5 +72,6 @@ def _check_connections(cfg, machine):
         except docker.errors.ContainerError as e:
             result[server.name] = False
             print("ERROR")
-            print(e.stderr.decode("utf-8").strip())
+            e_str = e.stderr.decode("utf-8").strip()  #  type: ignore
+            print(e_str)
     return result

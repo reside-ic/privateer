@@ -1,4 +1,5 @@
 import docker
+
 from privateer.util import (
     container_exists,
     container_if_exists,
@@ -8,7 +9,15 @@ from privateer.util import (
 )
 
 
-def service_command(image, name, *, mounts=None, ports=None, command=None):
+# TODO: alias these types for mounts and ports somewhere
+def service_command(
+    image: str,
+    name: str,
+    *,
+    mounts: list[docker.types.Mount] | None = None,
+    ports: dict[str, int] | None = None,
+    command: list[str] | None = None,
+) -> list[str]:
     return [
         "docker",
         "run",
@@ -24,15 +33,15 @@ def service_command(image, name, *, mounts=None, ports=None, command=None):
 
 
 def service_start(
-    name,
-    container_name,
-    image,
+    name: str,
+    container_name: str,
+    image: str,
     *,
-    dry_run=False,
-    mounts=None,
-    ports=None,
-    command=None,
-):
+    dry_run: bool = False,
+    mounts: list[docker.types.Mount] | None = None,
+    ports: dict[str, int] | None = None,
+    command: list[str] | None = None,
+) -> None:
     if dry_run:
         cmd = service_command(
             image, container_name, mounts=mounts, ports=ports, command=command
@@ -62,7 +71,7 @@ def service_start(
     )
 
 
-def service_stop(name, container_name):
+def service_stop(name: str, container_name: str) -> None:
     container = container_if_exists(container_name)
     if container:
         if container.status == "running":
@@ -71,7 +80,7 @@ def service_stop(name, container_name):
         print(f"Container '{container_name}' for '{name}' does not exist")
 
 
-def service_status(container_name):
+def service_status(container_name: str) -> None:
     container = container_if_exists(container_name)
     if container:
         print(container.status)

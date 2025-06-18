@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import click
-
 import docker
+
 from privateer.backup import backup
 from privateer.check import check
 from privateer.config import privateer_root
@@ -54,7 +54,7 @@ def cli_pull(path: Path | None) -> None:
         f"mrcide/privateer-client:{tag}",
         f"mrcide/privateer-server:{tag}",
     ]
-    cl = docker.from_env()
+    cl = docker.from_env()  # type: ignore
     for nm in img:
         print(f"pulling '{nm}'")
         cl.images.pull(nm)
@@ -80,6 +80,9 @@ def cli_keygen(path: Path | None, name: str | None, *, all: bool) -> None:
             raise RuntimeError(msg)
         keygen_all(root.config)
     else:
+        if not name:
+            msg = "Expected a name to be provided (or pass --all)"
+            raise RuntimeError(msg)
         keygen(root.config, name)
 
 

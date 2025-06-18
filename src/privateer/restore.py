@@ -1,19 +1,20 @@
 import docker
+
 from privateer.check import check
-from privateer.config import find_source
+from privateer.config import Config, find_source
 from privateer.util import match_value, mounts_str, run_container_with_command
 
 
 def restore(
-    cfg,
-    name,
-    volume,
+    cfg: Config,
+    name: str,
+    volume: str,
     *,
-    to_volume=None,
-    server=None,
-    source=None,
-    dry_run=False,
-):
+    to_volume: str | None = None,
+    server: str | None = None,
+    source: str | None = None,
+    dry_run: bool = False,
+) -> None:
     machine = check(cfg, name, quiet=True)
     server = match_value(server, cfg.list_servers(), "server")
     volume = match_value(volume, cfg.list_volumes(), "volume")
