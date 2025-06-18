@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, Mock, call
 
+import docker
 import pytest
 
-import docker
 import privateer.service
 from privateer.service import (
     service_command,
