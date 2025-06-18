@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, call
 
+import docker
 import vault_dev
 
-import docker
 import privateer.config
 import privateer.restore
 from privateer.config import read_config

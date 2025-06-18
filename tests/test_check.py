@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, call
 
+import docker
 import pytest
 import vault_dev
 
-import docker
 import privateer.check
 from privateer.check import _check_connections, check
 from privateer.config import read_config

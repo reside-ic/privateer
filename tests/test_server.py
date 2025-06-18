@@ -128,7 +128,7 @@ def test_can_stop_server(monkeypatch):
     mock_check = MagicMock()
     mock_stop = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.server, "check", mock_check)
+    monkeypatch.setattr(privateer.server, "check_server", mock_check)
     monkeypatch.setattr(privateer.server, "service_stop", mock_stop)
     server_stop(cfg, "alice")
     assert mock_check.call_count == 1
@@ -142,7 +142,7 @@ def test_can_get_server_status(monkeypatch):
     mock_check = MagicMock()
     mock_status = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.server, "check", mock_check)
+    monkeypatch.setattr(privateer.server, "check_server", mock_check)
     monkeypatch.setattr(privateer.server, "service_status", mock_status)
     server_status(cfg, "alice")
     assert mock_check.call_count == 1

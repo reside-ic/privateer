@@ -1,7 +1,7 @@
+import docker
 import pytest
 import vault_dev
 
-import docker
 from privateer.check import check
 from privateer.config import read_config
 from privateer.configure import configure

@@ -112,7 +112,7 @@ def test_can_stop_schedule(monkeypatch):
     mock_check = MagicMock()
     mock_stop = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "check_client", mock_check)
     monkeypatch.setattr(privateer.schedule, "service_stop", mock_stop)
     schedule_stop(cfg, "bob")
     assert mock_check.call_count == 1
@@ -126,7 +126,7 @@ def test_can_get_schedule_status(monkeypatch):
     mock_check = MagicMock()
     mock_status = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "check_client", mock_check)
     monkeypatch.setattr(privateer.schedule, "service_status", mock_status)
     schedule_status(cfg, "bob")
     assert mock_check.call_count == 1
