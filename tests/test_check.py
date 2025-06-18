@@ -5,7 +5,12 @@ import pytest
 import vault_dev
 
 import privateer.check
-from privateer.check import _check_connections, check
+from privateer.check import (
+    _check_connections,
+    check,
+    check_client,
+    check_server,
+)
 from privateer.config import read_config
 from privateer.configure import configure
 from privateer.keys import keygen_all
@@ -146,3 +151,31 @@ def test_only_test_connection_for_clients(monkeypatch, managed_docker):
         check(cfg, "bob", connection=True)
         assert mock_check.call_count == 1
         assert mock_check.call_args == call(cfg, cfg.clients[0])
+
+
+def test_servers_cannot_be_used_as_clients(managed_docker):
+    with vault_dev.Server() as server:
+        cfg = read_config("example/simple.json")
+        cfg.vault.url = server.url()
+        cfg.vault.token = server.token
+        vol = managed_docker("volume")
+        cfg.servers[0].key_volume = vol
+        keygen_all(cfg)
+        configure(cfg, "alice")
+        with pytest.raises(
+            Exception, match="'alice' is not a privateer client"
+        ):
+            check_client(cfg, "alice")
+
+
+def test_clients_cannot_be_used_as_servers(managed_docker):
+    with vault_dev.Server() as server:
+        cfg = read_config("example/simple.json")
+        cfg.vault.url = server.url()
+        cfg.vault.token = server.token
+        vol = managed_docker("volume")
+        cfg.servers[0].key_volume = vol
+        keygen_all(cfg)
+        configure(cfg, "bob")
+        with pytest.raises(Exception, match="'bob' is not a privateer server"):
+            check_server(cfg, "bob")
