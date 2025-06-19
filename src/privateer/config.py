@@ -4,7 +4,6 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from privateer.util import match_value
 from privateer.vault import hvac, vault_client
 
 
@@ -80,40 +79,17 @@ class Config(BaseModel):
 
 
 def read_config(path: str | Path) -> Config:
+    """Read configuration from disk.
+
+    Params:
+
+        path: Path to `privateer.json`
+
+    Returns: The privateer configuration.
+    """
+
     with open(path) as f:
         return Config(**json.loads(f.read().strip()))
-
-
-class Root(BaseModel):
-    config: Config
-    path: Path
-
-
-def privateer_root(path: Path | None) -> Root:
-    if path is None:
-        path = Path("privateer.json")
-    elif path.is_dir():
-        path = path / "privateer.json"
-    if not path.exists():
-        msg = f"Did not find privateer configuration at '{path}'"
-        raise Exception(msg)
-    return Root(config=read_config(path), path=path.parent)
-
-
-# this could be put elsewhere; we find the plausible sources (original
-# clients) that backed up a source to any server.
-def find_source(cfg: Config, volume: str, source: str | None) -> str | None:
-    if volume not in cfg.list_volumes():
-        msg = f"Unknown volume '{volume}'"
-        raise Exception(msg)
-    for v in cfg.volumes:
-        if v.name == volume and v.local:
-            if source is not None:
-                msg = f"'{volume}' is a local source, so 'source' must be empty"
-                raise Exception(msg)
-            return None
-    pos = [cl.name for cl in cfg.clients if volume in cl.backup]
-    return match_value(source, pos, "source")
 
 
 def _check_config(cfg: Config) -> None:

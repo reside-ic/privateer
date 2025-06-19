@@ -3,7 +3,7 @@ import os
 import docker
 
 from privateer.check import check
-from privateer.config import find_source
+from privateer.root import find_source
 from privateer.util import (
     ensure_image,
     isotimestamp,

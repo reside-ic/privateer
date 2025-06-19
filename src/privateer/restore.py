@@ -1,7 +1,8 @@
 import docker
 
 from privateer.check import check
-from privateer.config import Config, find_source
+from privateer.config import Config
+from privateer.root import find_source
 from privateer.util import match_value, mounts_str, run_container_with_command
 
 
