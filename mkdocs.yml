@@ -1,0 +1,79 @@
+# See here for details:
+# https://squidfunk.github.io/mkdocs-material/setup/
+
+site_name: privateer
+site_url: https://reside-ic.github.io/privateer/
+repo_url: https://github.com/reside-ic/privateer
+repo_name: reside-ic/privateer
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.action.edit
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      primary: blue
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: blue
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: blue
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+- "Home": index.md
+- "The CLI": cli.md
+- "Configuration": config.md
+
+plugins:
+- search
+- autorefs
+- mkdocstrings:
+    default_handler: python
+    handlers:
+      python:
+        inventories:
+        - https://docs.python.org/3/objects.inv
+        paths: [src]
+        options:
+          docstring_style: google
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          show_root_heading: true
+          show_source: false
+          # This makes things quite noisy I think:
+          # show_signature_annotations: true
+          signature_crossrefs: true
+          docstring_section_style: list
+
+- spellcheck:
+    backends:
+    - symspellpy
+    - codespell:
+        dictionaries: [clear, rare]
+    known_words: known-words.txt
+
+markdown_extensions:
+  - attr_list
+  - mkdocs-click
+  - pymdownx.magiclink

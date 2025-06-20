@@ -6,6 +6,17 @@ from privateer.service import service_start, service_status, service_stop
 
 
 def server_start(cfg: Config, name: str, *, dry_run: bool = False) -> None:
+    """Start the privateer server.
+
+    Args:
+        cfg: The configuration
+
+        name: Name of the server to start
+
+        dry_run: Don't actually start the server, but instead print
+            the shell command that *would* start the server
+
+    """
     machine = check_server(cfg, name, quiet=True)
 
     mounts = [
@@ -38,10 +49,27 @@ def server_start(cfg: Config, name: str, *, dry_run: bool = False) -> None:
 
 
 def server_stop(cfg: Config, name: str) -> None:
+    """Stop the privateer server.
+
+    Args:
+        cfg: The configuration
+
+        name: Name of the server to stop
+
+    """
+
     machine = check_server(cfg, name, quiet=True)
     service_stop(name, machine.container)
 
 
 def server_status(cfg: Config, name: str) -> None:
+    """Get the status of the privateer server.
+
+    Args:
+        cfg: The configuration
+
+        name: Name of the server to query
+
+    """
     machine = check_server(cfg, name, quiet=False)
     service_status(machine.container)

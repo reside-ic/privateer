@@ -1,0 +1,13 @@
+cli
+cron
+crontab
+hostname
+https
+json
+keygen
+postgres
+repo
+sshd
+tarfile
+url
+yacron

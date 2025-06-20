@@ -4,12 +4,8 @@ from pathlib import Path
 import pytest
 import vault_dev
 
-from privateer.config import (
-    _check_config,
-    find_source,
-    privateer_root,
-    read_config,
-)
+from privateer.config import _check_config, read_config
+from privateer.root import find_source, privateer_root
 from privateer.util import transient_working_directory
 
 
