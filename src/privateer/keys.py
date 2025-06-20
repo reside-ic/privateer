@@ -43,13 +43,13 @@ def keys_data(cfg: Config, name: str) -> dict[str, str]:
     """Extract keys from the vault.
 
     Args:
-
         cfg: The privateer configuration
 
         name: The name of the machine to extract keys for
 
-    Return: A dictionary, but we'll change this soon and will
-    document it at that point.
+    Return:
+        A dictionary, but we'll change this soon and will
+        document it at that point.
 
     """
     vault = cfg.vault.client()

@@ -31,7 +31,6 @@ class Schedule(BaseModel):
     """Configure schedule for regular backups.
 
     Attributes:
-
        jobs: An array of ScheduleJobs, describing a backup task
 
        port: Optional port, if you want to run the yacron API.  If not
@@ -53,7 +52,6 @@ class Server(BaseModel):
     There are no defaults for any field, so all must be provided.
 
     Attributes:
-
         name: A friendly name for the server.  This is the name used
             in all calls to the cli tool, or via the programmatic API.
 
@@ -96,7 +94,6 @@ class Client(BaseModel):
     Only the `name` attribute is required.
 
     Attributes:
-
         name: A friendly name for the client.  This is the name used
             in all calls to the cli tool, or via the programmatic API.
 
@@ -107,9 +104,9 @@ class Client(BaseModel):
             privateer knows about.
 
         key_volume: The volume to store keys in.  The default is
-           `privateer_keys` which may be reasonable but is only what
-           you want if the client only acts as a client for a single
-           privateer configuration.
+            `privateer_keys` which may be reasonable but is only what
+            you want if the client only acts as a client for a single
+            privateer configuration.
 
         schedule: Optionally a schedule for regular backups
     """
@@ -169,15 +166,14 @@ class Config(BaseModel):
     """The privateer configuration.
 
     Attributes:
-
         servers: A list of `Server` descriptions.  At least one here
-            will be required to do anthing useful.
+            will be required to do anything useful.
 
         clients: A list of `Client` descriptions, including the data
             sources that they will push into the system.  At least one
-            here will be required to do anthing useful.
+            here will be required to do anything useful.
 
-        volumes: A list of `Volume` decriptions.  At least one here
+        volumes: A list of `Volume` descriptions.  At least one here
             will be required to do anything useful.
 
         tag: Optionally, the docker tag to use for `privateer` images.
@@ -197,29 +193,33 @@ class Config(BaseModel):
     def list_servers(self) -> list[str]:
         """List known servers.
 
-        Return: A list of names of configured servers.
+        Return:
+            A list of names of configured servers.
         """
         return [x.name for x in self.servers]
 
     def list_clients(self) -> list[str]:
         """List known clients.
 
-        Return: A list of names of configured clients.
+        Return:
+            A list of names of configured clients.
         """
         return [x.name for x in self.clients]
 
     def list_volumes(self) -> list[str]:
         """List known volumes.
 
-        Return: A list of names of configured volumes.
+        Return:
+            A list of names of configured volumes.
         """
         return [x.name for x in self.volumes]
 
     def machine_config(self, name: str) -> Server | Client:
         """Fetch the configuration for a given machine.
 
-        Return: Configuration for a machine; this has a different
-        format for clients and servers, with few overlapping fields.
+        Return:
+            Configuration for a machine; this has a different format for
+            clients and servers, with few overlapping fields.
 
         """
         for el in self.servers + self.clients:
@@ -235,10 +235,10 @@ def read_config(path: str | Path) -> Config:
     """Read configuration from disk.
 
     Args:
-
         path: Path to `privateer.json`
 
-    Return: The privateer configuration.
+    Return:
+        The privateer configuration.
     """
 
     with open(path) as f:

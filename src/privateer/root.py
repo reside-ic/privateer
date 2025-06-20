@@ -28,7 +28,8 @@ def privateer_root(path: Path | None) -> Root:
         path: Optional path to the root.  If not given then we look
             for `privateer.json` in the current directory.
 
-    Return: A `Root` object
+    Return:
+        A `Root` object
     """
     if path is None:
         path = Path("privateer.json")
