@@ -1,15 +1,11 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
 from privateer.util import match_value
-from privateer.vault import vault_client
-
-
-def read_config(path):
-    with open(path) as f:
-        return Config(**json.loads(f.read().strip()))
+from privateer.vault import hvac, vault_client
 
 
 class ScheduleJob(BaseModel):
@@ -50,7 +46,7 @@ class Vault(BaseModel):
     prefix: str
     token: str | None = None
 
-    def client(self):
+    def client(self) -> hvac.Client:
         return vault_client(self.url, self.token)
 
 
@@ -61,19 +57,19 @@ class Config(BaseModel):
     vault: Vault
     tag: str = "latest"
 
-    def model_post_init(self, __context):
+    def model_post_init(self, __context) -> None:
         _check_config(self)
 
-    def list_servers(self):
+    def list_servers(self) -> list[str]:
         return [x.name for x in self.servers]
 
-    def list_clients(self):
+    def list_clients(self) -> list[str]:
         return [x.name for x in self.clients]
 
-    def list_volumes(self):
+    def list_volumes(self) -> list[str]:
         return [x.name for x in self.volumes]
 
-    def machine_config(self, name):
+    def machine_config(self, name) -> Server | Client:
         for el in self.servers + self.clients:
             if el.name == name:
                 return el
@@ -81,6 +77,11 @@ class Config(BaseModel):
         valid_str = ", ".join(f"'{x}'" for x in valid)
         msg = f"Invalid configuration '{name}', must be one of {valid_str}"
         raise Exception(msg)
+
+
+def read_config(path: str | Path) -> Config:
+    with open(path) as f:
+        return Config(**json.loads(f.read().strip()))
 
 
 class Root(BaseModel):
@@ -101,7 +102,7 @@ def privateer_root(path: Path | None) -> Root:
 
 # this could be put elsewhere; we find the plausible sources (original
 # clients) that backed up a source to any server.
-def find_source(cfg, volume, source):
+def find_source(cfg: Config, volume: str, source: str | None) -> str | None:
     if volume not in cfg.list_volumes():
         msg = f"Unknown volume '{volume}'"
         raise Exception(msg)
@@ -115,7 +116,7 @@ def find_source(cfg, volume, source):
     return match_value(source, pos, "source")
 
 
-def _check_config(cfg):
+def _check_config(cfg: Config) -> None:
     servers = cfg.list_servers()
     clients = cfg.list_clients()
     _check_not_duplicated(servers, "servers")
@@ -153,7 +154,7 @@ def _check_config(cfg):
         cfg.vault.prefix = cfg.vault.prefix[7:]
 
 
-def _check_not_duplicated(els, name):
+def _check_not_duplicated(els: list[Any], name: str) -> None:
     if len(els) > len(set(els)):
         msg = f"Duplicated elements in {name}"
         raise Exception(msg)

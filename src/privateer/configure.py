@@ -1,10 +1,14 @@
+from pathlib import Path
+
 import docker
+
+from privateer.config import Config
 from privateer.keys import keys_data
 from privateer.util import string_to_volume
 from privateer.yacron import generate_yacron_yaml
 
 
-def configure(cfg, name):
+def configure(cfg: Config, name: str) -> None:
     cl = docker.from_env()
     keys = keys_data(cfg, name)
     schedule = generate_yacron_yaml(cfg, name)
@@ -41,6 +45,6 @@ def configure(cfg, name):
     string_to_volume(name, vol, "name", uid=0, gid=0)
 
 
-def write_identity(path, name):
+def write_identity(path: Path, name: str) -> None:
     with (path / ".privateer_identity").open("w") as f:
         f.write(f"{name}\n")

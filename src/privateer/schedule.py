@@ -1,11 +1,13 @@
 import docker
-from privateer.check import check
+
+from privateer.check import check_client
+from privateer.config import Config
 from privateer.service import service_start, service_status, service_stop
 from privateer.util import unique
 
 
-def schedule_start(cfg, name, *, dry_run=False):
-    machine = check(cfg, name, quiet=True)
+def schedule_start(cfg: Config, name: str, *, dry_run: bool = False) -> None:
+    machine = check_client(cfg, name, quiet=True)
     if not machine.schedule:
         msg = f"A schedule is not defined in the configuration for '{name}'"
         raise Exception(msg)
@@ -33,11 +35,17 @@ def schedule_start(cfg, name, *, dry_run=False):
     )
 
 
-def schedule_stop(cfg, name):
-    machine = check(cfg, name, quiet=True)
+def schedule_stop(cfg: Config, name: str) -> None:
+    machine = check_client(cfg, name, quiet=True)
+    if not machine.schedule:
+        msg = f"A schedule is not defined in the configuration for '{name}'"
+        raise Exception(msg)
     service_stop(name, machine.schedule.container)
 
 
-def schedule_status(cfg, name):
-    machine = check(cfg, name, quiet=False)
+def schedule_status(cfg: Config, name: str) -> None:
+    machine = check_client(cfg, name, quiet=False)
+    if not machine.schedule:
+        msg = f"A schedule is not defined in the configuration for '{name}'"
+        raise Exception(msg)
     service_status(machine.schedule.container)

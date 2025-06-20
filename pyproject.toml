@@ -185,3 +185,7 @@ exclude_lines = [
 
 [tool.mypy]
 exclude = ["docker"]
+
+[[tool.mypy.overrides]]
+module = "vault_dev"
+ignore_missing_imports = true

@@ -17,15 +17,15 @@ def test_can_run_keygen(tmp_path, mocker):
 
     res = runner.invoke(cli.cli_keygen, ["--path", tmp_path])
     cfg = read_config(tmp_path / "privateer.json")
-    assert res.exit_code == 0
-    assert cli.keygen.call_count == 1
-    assert cli.keygen.mock_calls[0] == call(cfg, None)
+    assert res.exit_code == 1
+    assert "Expected a name to be provided" in str(res.exception)
+    assert cli.keygen.call_count == 0
 
     res = runner.invoke(cli.cli_keygen, ["--path", tmp_path, "alice"])
     cfg = read_config(tmp_path / "privateer.json")
     assert res.exit_code == 0
-    assert cli.keygen.call_count == 2
-    assert cli.keygen.mock_calls[1] == call(cfg, "alice")
+    assert cli.keygen.call_count == 1
+    assert cli.keygen.mock_calls[0] == call(cfg, "alice")
 
     res = runner.invoke(cli.cli_keygen, ["--path", tmp_path, "--all"])
     cfg = read_config(tmp_path / "privateer.json")

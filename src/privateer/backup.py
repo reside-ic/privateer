@@ -1,9 +1,11 @@
 import docker
-from privateer.check import check
+
+from privateer.check import check_client
+from privateer.config import Config
 from privateer.util import match_value, mounts_str, run_container_with_command
 
 
-def backup_command(name, volume, server):
+def backup_command(name: str, volume: str, server: str) -> list[str]:
     return [
         "rsync",
         "-av",
@@ -13,8 +15,15 @@ def backup_command(name, volume, server):
     ]
 
 
-def backup(cfg, name, volume, *, server=None, dry_run=False):
-    machine = check(cfg, name, quiet=True)
+def backup(
+    cfg: Config,
+    name: str,
+    volume: str,
+    *,
+    server: str | None = None,
+    dry_run: bool = False,
+) -> None:
+    machine = check_client(cfg, name, quiet=True)
     server = match_value(server, cfg.list_servers(), "server")
     volume = match_value(volume, machine.backup, "volume")
     image = f"mrcide/privateer-client:{cfg.tag}"

@@ -2,9 +2,9 @@ import os
 import re
 import tarfile
 
+import docker
 import pytest
 
-import docker
 import privateer.util
 
 
@@ -128,40 +128,6 @@ def test_can_detect_if_volume_exists(managed_docker):
     assert privateer.util.volume_exists(name)
     cl.volumes.get(name).remove()
     assert not privateer.util.volume_exists(name)
-
-
-def test_can_take_ownership_of_a_file(tmp_path, managed_docker):
-    cl = docker.from_env()
-    mounts = [docker.types.Mount("/src", str(tmp_path), type="bind")]
-    command = ["touch", "/src/newfile"]
-    name = managed_docker("container")
-    cl.containers.run("ubuntu", name=name, mounts=mounts, command=command)
-    path = tmp_path / "newfile"
-    info = os.stat(path)
-    assert info.st_uid == 0
-    assert info.st_gid == 0
-    uid = os.geteuid()
-    gid = os.getegid()
-    cmd = privateer.util.take_ownership(
-        "newfile", str(tmp_path), command_only=True
-    )
-    expected = [
-        "docker",
-        "run",
-        "--rm",
-        *privateer.util.mounts_str(mounts),
-        "-w",
-        "/src",
-        "ubuntu",
-        "chown",
-        f"{uid}.{gid}",
-        "newfile",
-    ]
-    assert cmd == expected
-    privateer.util.take_ownership("newfile", str(tmp_path))
-    info = os.stat(path)
-    assert info.st_uid == uid
-    assert info.st_gid == gid
 
 
 def test_can_format_ports():

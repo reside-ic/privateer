@@ -107,12 +107,18 @@ def test_cant_schedule_clients_with_no_schedule(managed_docker):
         with pytest.raises(Exception, match=msg):
             schedule_start(cfg, "bob", dry_run=True)
 
+        with pytest.raises(Exception, match=msg):
+            schedule_stop(cfg, "bob")
+
+        with pytest.raises(Exception, match=msg):
+            schedule_status(cfg, "bob")
+
 
 def test_can_stop_schedule(monkeypatch):
     mock_check = MagicMock()
     mock_stop = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "check_client", mock_check)
     monkeypatch.setattr(privateer.schedule, "service_stop", mock_stop)
     schedule_stop(cfg, "bob")
     assert mock_check.call_count == 1
@@ -126,7 +132,7 @@ def test_can_get_schedule_status(monkeypatch):
     mock_check = MagicMock()
     mock_status = MagicMock()
     cfg = MagicMock()
-    monkeypatch.setattr(privateer.schedule, "check", mock_check)
+    monkeypatch.setattr(privateer.schedule, "check_client", mock_check)
     monkeypatch.setattr(privateer.schedule, "service_status", mock_status)
     schedule_status(cfg, "bob")
     assert mock_check.call_count == 1

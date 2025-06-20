@@ -4,7 +4,7 @@ import re
 import hvac
 
 
-def vault_client(addr, token=None):
+def vault_client(addr: str, token: str | None = None) -> hvac.Client:
     token = _get_vault_token(token)
     if _is_github_token(token):
         print("logging into vault using github")
@@ -15,7 +15,7 @@ def vault_client(addr, token=None):
     return client
 
 
-def _get_vault_token(token):
+def _get_vault_token(token: str | None) -> str:
     if token is not None:
         re_envvar = re.compile("^\\$[A-Z0-9_-]+$")
         if re_envvar.match(token):
@@ -29,6 +29,6 @@ def _get_vault_token(token):
     return input(prompt).strip()
 
 
-def _is_github_token(token):
+def _is_github_token(token: str) -> bool:
     re_gh = re.compile("^ghp_[A-Za-z0-9]{36}$")
-    return re_gh.match(token)
+    return bool(re_gh.match(token))

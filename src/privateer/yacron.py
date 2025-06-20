@@ -4,11 +4,11 @@ import tempfile
 import yacron.config  # type: ignore
 
 from privateer.backup import backup_command
-from privateer.config import Client
+from privateer.config import Client, Config
 from privateer.util import current_timezone_name
 
 
-def generate_yacron_yaml(cfg, name):
+def generate_yacron_yaml(cfg: Config, name: str) -> None | list[str]:
     machine = cfg.machine_config(name)
     if not isinstance(machine, Client) or not machine.schedule:
         return None
@@ -32,12 +32,11 @@ def generate_yacron_yaml(cfg, name):
     return ret
 
 
-def _validate_yacron_yaml(text):
-    text = "".join(f"{x}\n" for x in text)
+def _validate_yacron_yaml(text: list[str]) -> bool:
     try:
         fd, tmp = tempfile.mkstemp(text=True)
         with os.fdopen(fd, "w") as f:
-            f.write(text)
+            f.write("".join(f"{x}\n" for x in text))
         yacron.config.parse_config(tmp)
         return True
     finally:
