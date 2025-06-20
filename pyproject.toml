@@ -140,8 +140,6 @@ ignore = [
   "A002",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
-  # Don't require docstrings everywhere for now
-  "D100", "D101", "D102", "D103", "D104", "D105", "D107",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
   "FBT003",
   # Ignore checks for possible passwords
