@@ -99,12 +99,14 @@ all = [
 ]
 
 [tool.black]
-target-version = ["py37"]
 line-length = 80
 skip-string-normalization = true
 
 [tool.ruff]
 line-length = 80
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.ruff.lint]
 select = [
@@ -138,6 +140,8 @@ ignore = [
   "A002",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
+  # Don't require docstrings everywhere for now
+  "D100", "D101", "D102", "D103", "D104", "D105", "D107",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
   "FBT003",
   # Ignore checks for possible passwords
@@ -166,9 +170,6 @@ ban-relative-imports = "all"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.format]
-docstring-code-format = true
 
 [tool.coverage.run]
 source_pkgs = ["privateer", "tests"]
