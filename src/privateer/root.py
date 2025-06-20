@@ -24,7 +24,6 @@ def privateer_root(path: Path | None) -> Root:
     """Open a privateer root.
 
     Args:
-
         path: Optional path to the root.  If not given then we look
             for `privateer.json` in the current directory.
 
