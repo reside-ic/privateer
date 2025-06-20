@@ -164,6 +164,12 @@ ban-relative-imports = "all"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.coverage.run]
 source_pkgs = ["privateer", "tests"]
 branch = true
@@ -189,3 +195,15 @@ exclude = ["docker"]
 [[tool.mypy.overrides]]
 module = "vault_dev"
 ignore_missing_imports = true
+
+[tool.hatch.envs.docs]
+extra-dependencies = [
+  "mkdocs-click",
+  "mkdocs-material",
+  "mkdocs-spellcheck[all]",
+  "mkdocstrings-python",
+]
+
+[tool.hatch.envs.docs.scripts]
+build = "mkdocs build {args}"
+serve = "mkdocs serve {args}"

@@ -5,6 +5,24 @@ import hvac
 
 
 def vault_client(addr: str, token: str | None = None) -> hvac.Client:
+    """Create a vault client.
+
+    This is a wrapper around vault methods in `hvac`, to simplify
+    creation of a client.  It is mostly trying to smooth over fetching
+    tokens.
+
+    Args:
+
+        addr: The vault address (url)
+
+        token: An optional token.  This can be the actual token, the
+            name of an environment variable in which the token is
+            stored (starting with `$` and in all-caps), or `None`, in
+            which case we check that `VAULT_TOKEN` and
+            `VAULT_AUTH_GITHUB_TOKEN` variables (in that order) and
+            fall back on interactively prompting for a token.
+
+    """
     token = _get_vault_token(token)
     if _is_github_token(token):
         print("logging into vault using github")

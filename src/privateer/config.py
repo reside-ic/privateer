@@ -28,7 +28,7 @@ class ScheduleJob(BaseModel):
 
 
 class Schedule(BaseModel):
-    """Congfigure schedule for regular backups.
+    """Configure schedule for regular backups.
 
     Attributes:
 
@@ -149,7 +149,7 @@ class Vault(BaseModel):
             so something like `/secret/privateer/<application>` is a
             reasonable choice
 
-        token: Optional token (or name of an environment vaiable to
+        token: Optional token (or name of an environment variable to
             find this token) to fetch secrets.  If not present and a
             token is required then we look at the environment
             variables `VAULT_TOKEN` and `VAULT_AUTH_GITHUB_TOKEN` (in
@@ -197,28 +197,28 @@ class Config(BaseModel):
     def list_servers(self) -> list[str]:
         """List known servers.
 
-        Returns: A list of names of configured servers.
+        Return: A list of names of configured servers.
         """
         return [x.name for x in self.servers]
 
     def list_clients(self) -> list[str]:
         """List known clients.
 
-        Returns: A list of names of configured clients.
+        Return: A list of names of configured clients.
         """
         return [x.name for x in self.clients]
 
     def list_volumes(self) -> list[str]:
         """List known volumes.
 
-        Returns: A list of names of configured volumes.
+        Return: A list of names of configured volumes.
         """
         return [x.name for x in self.volumes]
 
     def machine_config(self, name: str) -> Server | Client:
         """Fetch the configuration for a given machine.
 
-        Returns: Configuration for a machine; this has a different
+        Return: Configuration for a machine; this has a different
         format for clients and servers, with few overlapping fields.
 
         """
@@ -234,11 +234,11 @@ class Config(BaseModel):
 def read_config(path: str | Path) -> Config:
     """Read configuration from disk.
 
-    Params:
+    Args:
 
         path: Path to `privateer.json`
 
-    Returns: The privateer configuration.
+    Return: The privateer configuration.
     """
 
     with open(path) as f:
