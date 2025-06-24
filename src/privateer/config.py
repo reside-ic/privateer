@@ -34,7 +34,7 @@ class Schedule(BaseModel):
        jobs: An array of ScheduleJobs, describing a backup task
 
        port: Optional port, if you want to run the yacron API.  If not
-           given, the the API will not be exposed.
+           given, then the API will not be exposed.
 
        container: Optional name of the container. If not given, we
            default to `privateer_scheduler`
@@ -57,7 +57,7 @@ class Server(BaseModel):
 
         hostname: The full hostname for the server
 
-        port: The port to use for ssh.  We do not any ssh server
+        port: The port to use for ssh.  We do not require any ssh server
             already running at the host, but run our own, so if you
             are already running ssh on port 22 you should use a
             different port.
