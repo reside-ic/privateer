@@ -4,23 +4,79 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from privateer.util import match_value
 from privateer.vault import hvac, vault_client
 
 
 class ScheduleJob(BaseModel):
+    """Configure a regular backup job.
+
+    Attributes:
+        server: The name of the server to back up to.
+
+        volume: The name of the volume to back up.
+
+        schedule: The backup schedule, in "cron" format.  Extension
+            formats, such as `@daily` are supported, otherwise use a
+            5-element cron specifier.  See <https://crontab.guru/> for
+            help generating and interpreting these.
+
+    """
+
     server: str
     volume: str
     schedule: str
 
 
 class Schedule(BaseModel):
+    """Configure schedule for regular backups.
+
+    Attributes:
+       jobs: An array of ScheduleJobs, describing a backup task
+
+       port: Optional port, if you want to run the yacron API.  If not
+           given, then the API will not be exposed.
+
+       container: Optional name of the container. If not given, we
+           default to `privateer_scheduler`
+
+    """
+
+    jobs: list[ScheduleJob]
     port: int | None = None
     container: str = "privateer_scheduler"
-    jobs: list[ScheduleJob]
 
 
 class Server(BaseModel):
+    """Configuration for a server.
+
+    There are no defaults for any field, so all must be provided.
+
+    Attributes:
+        name: A friendly name for the server.  This is the name used
+            in all calls to the cli tool, or via the programmatic API.
+
+        hostname: The full hostname for the server
+
+        port: The port to use for ssh.  We do not require any ssh server
+            already running at the host, but run our own, so if you
+            are already running ssh on port 22 you should use a
+            different port.
+
+        key_volume: The volume to use to persist keys.  We suggest
+            `privateer_<application>_keys,` where `<application>` is
+            some short reference to the application being backed up.
+
+        data_volume: The volume to use to persist data.  We suggest
+            `privateer_<application>_data`, where `<application>` is
+            some short reference to the application being backed up.
+
+        container: The name of the long-running container that will
+            run the privateer server.  We suggest
+            `privateer_<application>_server`, where `<application>` is
+            some short reference to the application being backed up.
+
+    """
+
     name: str
     hostname: str
     port: int
@@ -30,6 +86,31 @@ class Server(BaseModel):
 
 
 class Client(BaseModel):
+    """Client configuration
+
+    Clients are only ever referred to from the client machine itself
+    so we do not need to know their hostname.
+
+    Only the `name` attribute is required.
+
+    Attributes:
+        name: A friendly name for the client.  This is the name used
+            in all calls to the cli tool, or via the programmatic API.
+
+        backup: An optional array of volumes to back up.  This would
+            be empty (or missing, equivalently) on a machine that is
+            not the source of truth for any data, such as a staging
+            machine.  You can still **restore** from any volume that
+            privateer knows about.
+
+        key_volume: The volume to store keys in.  The default is
+            `privateer_keys` which may be reasonable but is only what
+            you want if the client only acts as a client for a single
+            privateer configuration.
+
+        schedule: Optionally a schedule for regular backups
+    """
+
     name: str
     backup: list[str] = []
     key_volume: str = "privateer_keys"
@@ -37,11 +118,42 @@ class Client(BaseModel):
 
 
 class Volume(BaseModel):
+    """Describe a volume.
+
+    Attributes:
+        name: The name of the volume; this is the same as the name of
+            the volume on disk (e.g., listed by `docker volume list`).
+
+        local: An optional boolean indicating if the volume is local
+            to the **server**.  This is designed to support a workflow
+            where content arrives on the server through some other
+            process (in our case it's a barman process that is doing
+            continual backup of a Postgres server).
+    """
+
     name: str
     local: bool = False
 
 
 class Vault(BaseModel):
+    """Configure the vault.
+
+    Attributes:
+        url: The url of the vault server
+
+        prefix: The path prefix for secrets within a v1 key-value
+            store.  This is typically mounted in vault at `/secret/`,
+            so something like `/secret/privateer/<application>` is a
+            reasonable choice
+
+        token: Optional token (or name of an environment variable to
+            find this token) to fetch secrets.  If not present and a
+            token is required then we look at the environment
+            variables `VAULT_TOKEN` and `VAULT_AUTH_GITHUB_TOKEN` (in
+            that order) and then prompt interactively for a token.
+
+    """
+
     url: str
     prefix: str
     token: str | None = None
@@ -51,6 +163,24 @@ class Vault(BaseModel):
 
 
 class Config(BaseModel):
+    """The privateer configuration.
+
+    Attributes:
+        servers: A list of `Server` descriptions.  At least one here
+            will be required to do anything useful.
+
+        clients: A list of `Client` descriptions, including the data
+            sources that they will push into the system.  At least one
+            here will be required to do anything useful.
+
+        volumes: A list of `Volume` descriptions.  At least one here
+            will be required to do anything useful.
+
+        tag: Optionally, the docker tag to use for `privateer` images.
+            The default `latest` will be appropriate unless you are
+            testing some new feature.
+    """
+
     servers: list[Server]
     clients: list[Client]
     volumes: list[Volume]
@@ -61,15 +191,37 @@ class Config(BaseModel):
         _check_config(self)
 
     def list_servers(self) -> list[str]:
+        """List known servers.
+
+        Return:
+            A list of names of configured servers.
+        """
         return [x.name for x in self.servers]
 
     def list_clients(self) -> list[str]:
+        """List known clients.
+
+        Return:
+            A list of names of configured clients.
+        """
         return [x.name for x in self.clients]
 
     def list_volumes(self) -> list[str]:
+        """List known volumes.
+
+        Return:
+            A list of names of configured volumes.
+        """
         return [x.name for x in self.volumes]
 
-    def machine_config(self, name) -> Server | Client:
+    def machine_config(self, name: str) -> Server | Client:
+        """Fetch the configuration for a given machine.
+
+        Return:
+            Configuration for a machine; this has a different format for
+            clients and servers, with few overlapping fields.
+
+        """
         for el in self.servers + self.clients:
             if el.name == name:
                 return el
@@ -80,40 +232,17 @@ class Config(BaseModel):
 
 
 def read_config(path: str | Path) -> Config:
+    """Read configuration from disk.
+
+    Args:
+        path: Path to `privateer.json`
+
+    Return:
+        The privateer configuration.
+    """
+
     with open(path) as f:
         return Config(**json.loads(f.read().strip()))
-
-
-class Root(BaseModel):
-    config: Config
-    path: Path
-
-
-def privateer_root(path: Path | None) -> Root:
-    if path is None:
-        path = Path("privateer.json")
-    elif path.is_dir():
-        path = path / "privateer.json"
-    if not path.exists():
-        msg = f"Did not find privateer configuration at '{path}'"
-        raise Exception(msg)
-    return Root(config=read_config(path), path=path.parent)
-
-
-# this could be put elsewhere; we find the plausible sources (original
-# clients) that backed up a source to any server.
-def find_source(cfg: Config, volume: str, source: str | None) -> str | None:
-    if volume not in cfg.list_volumes():
-        msg = f"Unknown volume '{volume}'"
-        raise Exception(msg)
-    for v in cfg.volumes:
-        if v.name == volume and v.local:
-            if source is not None:
-                msg = f"'{volume}' is a local source, so 'source' must be empty"
-                raise Exception(msg)
-            return None
-    pos = [cl.name for cl in cfg.clients if volume in cl.backup]
-    return match_value(source, pos, "source")
 
 
 def _check_config(cfg: Config) -> None:

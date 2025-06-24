@@ -6,16 +6,52 @@ from privateer.config import Config
 
 
 def keygen(cfg: Config, name: str) -> None:
+    """Generate a key and store it in the vault.
+
+    The generated key is in rsa format.  Any previous key will be
+    silently overwritten.
+
+    Args:
+
+        cfg: The privateer configuration.
+
+        name: The name of the machine to generate keys for.
+
+    """
     _keygen(cfg, name, cfg.vault.client())
 
 
 def keygen_all(cfg: Config) -> None:
+    """Generate keys for all machines.
+
+    The generated keys are in rsa format.  Any previous keys will be
+    silently overwritten.
+
+    Args:
+
+        cfg: The privateer configuration.
+
+    """
     vault = cfg.vault.client()
     for name in cfg.list_servers() + cfg.list_clients():
         _keygen(cfg, name, vault)
 
 
+# TODO: this should be renmaed to be more verby
+# TODO: this should return KeysData
 def keys_data(cfg: Config, name: str) -> dict[str, str]:
+    """Extract keys from the vault.
+
+    Args:
+        cfg: The privateer configuration
+
+        name: The name of the machine to extract keys for
+
+    Return:
+        A dictionary, but we'll change this soon and will
+        document it at that point.
+
+    """
     vault = cfg.vault.client()
     response = vault.secrets.kv.v1.read_secret(f"{cfg.vault.prefix}/{name}")
     ret = {

@@ -20,7 +20,7 @@ def check(
         raise Exception(msg)
     if not quiet:
         print(f"Volume '{vol}' looks configured as '{name}'")
-    if connection and name in cfg.list_clients():
+    if connection and isinstance(machine, Client):
         _check_connections(cfg, machine)
     return machine
 

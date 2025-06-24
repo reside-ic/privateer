@@ -5,10 +5,10 @@ import docker
 
 from privateer.backup import backup
 from privateer.check import check
-from privateer.config import privateer_root
 from privateer.configure import configure, write_identity
 from privateer.keys import keygen, keygen_all
 from privateer.restore import restore
+from privateer.root import privateer_root
 from privateer.schedule import schedule_start, schedule_status, schedule_stop
 from privateer.server import server_start, server_status, server_stop
 from privateer.tar import export_tar, export_tar_local, import_tar
