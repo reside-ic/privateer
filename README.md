@@ -155,6 +155,14 @@ In addition, we will support point-in-time backups on `alice`, creating `tar` fi
 pip install privateer
 ```
 
+Or with venv: see [YouTrack article](https://mrc-ide.myjetbrains.com/youtrack/articles/VIMC-A-197/Backups-and-Restores).
+
+## Development
+
+This is a hatch project, and when a GitHub release is made, a new version is built on pypi.org.
+
+See also notes from development at [./development.md](./development.md).
+
 ## License
 
 `privateer` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
