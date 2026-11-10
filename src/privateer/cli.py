@@ -163,8 +163,7 @@ def cli_backup(
     "--to-volume", metavar="NAME", help="Alternate volume to restore to"
 )
 @click.argument("volume")
-# noqa: PLR0917
-def cli_restore(
+def cli_restore( # noqa: PLR0917
     path: Path | None,
     name: str | None,
     volume: str,
