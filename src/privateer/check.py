@@ -72,6 +72,6 @@ def _check_connections(
         except docker.errors.ContainerError as e:
             result[server.name] = False
             print("ERROR")
-            e_str = e.stderr.decode("utf-8").strip()  #  type: ignore
+            e_str = e.stderr.decode("utf-8").strip()  # type: ignore
             print(e_str)
     return result
