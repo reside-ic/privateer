@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import os
 import os.path
 import random
@@ -69,7 +69,7 @@ def string_from_container(container: Container, path: str) -> str:
 
 
 def bytes_from_container(container: Container, path: str) -> bytes:
-    stream, status = container.get_archive(path)
+    stream, _status = container.get_archive(path)
     try:
         fd, tmp = tempfile.mkstemp(text=False)
         with os.fdopen(fd, "wb") as f:
@@ -223,7 +223,7 @@ def match_value(given: str | None, valid: list[str], name: str) -> str:
 
 
 def isotimestamp() -> str:
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    now = dt.datetime.now(tz=dt.timezone.utc)
     return now.strftime("%Y%m%d-%H%M%S")
 
 

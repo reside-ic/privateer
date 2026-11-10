@@ -8,7 +8,7 @@ from privateer.config import Client, Config
 from privateer.util import current_timezone_name
 
 
-def generate_yacron_yaml(cfg: Config, name: str) -> None | list[str]:
+def generate_yacron_yaml(cfg: Config, name: str) -> list[str] | None:
     machine = cfg.machine_config(name)
     if not isinstance(machine, Client) or not machine.schedule:
         return None
