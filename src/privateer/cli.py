@@ -163,7 +163,7 @@ def cli_backup(
     "--to-volume", metavar="NAME", help="Alternate volume to restore to"
 )
 @click.argument("volume")
-# pylint: disable=too-many-positional-arguments
+# noqa: PLR0917
 def cli_restore(
     path: Path | None,
     name: str | None,
