@@ -40,8 +40,7 @@ def test_can_create_vault_client():
 def test_validation_is_run_on_load(tmp_path):
     path = tmp_path / "privateer.json"
     with path.open("w") as f:
-        f.write(
-            """{
+        f.write("""{
     "servers": [
         {
             "name": "alice",
@@ -68,8 +67,7 @@ def test_validation_is_run_on_load(tmp_path):
         "url": "http://localhost:8200",
         "prefix": "/secret/privateer"
     }
-}"""
-        )
+}""")
     msg = "Invalid machine listed as both a client and a server: 'alice'"
     with pytest.raises(Exception, match=msg):
         read_config(path)
