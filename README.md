@@ -17,6 +17,8 @@ A typical framework for us would be that we would have a "production" machine wh
 
 Because we are going to use ssh for transport, we assume existence of [HashiCorp Vault](https://www.vaultproject.io/) to store secrets.
 
+Some notes specific to our set-up, correct at time of writing, are on YouTrack, [here](https://mrc-ide.myjetbrains.com/youtrack/articles/VIMC-A-197/Backups-and-Restores).
+
 ### Configuration
 
 The system is configured via a single `json` document, `privateer.json` which contains information about all the moving parts: servers, clients, volumes and the vault configuration. See [`example/`](example/) for some examples.
@@ -154,6 +156,14 @@ In addition, we will support point-in-time backups on `alice`, creating `tar` fi
 ```console
 pip install privateer
 ```
+
+Or with venv: see [YouTrack article](https://mrc-ide.myjetbrains.com/youtrack/articles/VIMC-A-197/Backups-and-Restores).
+
+## Development
+
+This is a hatch project, and when a GitHub release is made, a new version is built on pypi.org.
+
+See also notes from development at [./development.md](./development.md).
 
 ## License
 
